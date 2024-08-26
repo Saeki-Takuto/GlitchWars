@@ -139,7 +139,7 @@ void UpdateGame(void)
 void DrawGame(void)
 {
 	//”wŒi‚Ì•`‰æˆ—
-	DrawBack();
+	DrawBack();//back
 
 	//’e‚Ì•`‰æˆ—
 	DrawBullet();
