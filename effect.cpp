@@ -15,14 +15,14 @@
 #include "score.h"
 
 //マクロ定義
-#define MAX_EFFECT (4096)//エフェクトの最大数
-#define MAX_SPEED (5)	//アニメーションスピード
+#define MAX_EFFECT (2048)//エフェクトの最大数
 
 //エフェクト構造体の定義
 typedef struct
 {
 	D3DXVECTOR3 pos;	//位置
-	D3DXVECTOR3 col;	//移動量
+	D3DXCOLOR col;	//色
+	D3DXVECTOR3 move;//移動量
 	D3DXVECTOR3 rot;//向き
 	float fRadius;	//エフェクトを出してる物のタイプ
 	float fLength;//対角線の長さ
@@ -54,11 +54,13 @@ void InitEffect(void)
 	for (nCntEffect = 0; nCntEffect < MAX_EFFECT; nCntEffect++)
 	{
 		g_aEffect[nCntEffect].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_aEffect[nCntEffect].col = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		g_aEffect[nCntEffect].col = D3DXCOLOR(0.0f, 0.0f, 0.0f,0.0f);
+		g_aEffect[nCntEffect].move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_aEffect[nCntEffect].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_aEffect[nCntEffect].nLife = 0;
-		g_aEffect[nCntEffect].fLength= sqrtf(WIDTHEFFECT * WIDTHEFFECT + HEIGHTEFFECT * HEIGHTEFFECT) / 2.0f;
-		g_aEffect[nCntEffect].fAngle = atan2f(WIDTHEFFECT, HEIGHTEFFECT);
+		g_aEffect[nCntEffect].nLife =0;
+		g_aEffect[nCntEffect].fLength = 0.0f;
+		g_aEffect[nCntEffect].fAngle = 0.0f;
+		g_aEffect[nCntEffect].fRadius = 0.0f;
 		g_aEffect[nCntEffect].bUse = false;//使用していない状態にする
 		
 	}
@@ -79,24 +81,11 @@ void InitEffect(void)
 
 	for (nCntEffect = 0; nCntEffect < MAX_EFFECT; nCntEffect++)
 	{
-		//pVtx[0].pos = D3DXVECTOR3(g_aEffect[nCntEffect].pos.x - (WIDTHEFFECT / 2)* g_aEffect[nCntEffect].fLength, g_aEffect[nCntEffect].pos.y - (HEIGHTEFFECT / 2)* g_aEffect[nCntEffect].fLength, g_aEffect[nCntEffect].pos.z);
-		//pVtx[1].pos = D3DXVECTOR3(g_aEffect[nCntEffect].pos.x + (WIDTHEFFECT / 2)* g_aEffect[nCntEffect].fLength, g_aEffect[nCntEffect].pos.y - (HEIGHTEFFECT / 2)* g_aEffect[nCntEffect].fLength, g_aEffect[nCntEffect].pos.z);
-		//pVtx[2].pos = D3DXVECTOR3(g_aEffect[nCntEffect].pos.x - (WIDTHEFFECT / 2)* g_aEffect[nCntEffect].fLength, g_aEffect[nCntEffect].pos.y + (HEIGHTEFFECT / 2)* g_aEffect[nCntEffect].fLength, g_aEffect[nCntEffect].pos.z);
-		//pVtx[3].pos = D3DXVECTOR3(g_aEffect[nCntEffect].pos.x + (WIDTHEFFECT / 2)* g_aEffect[nCntEffect].fLength, g_aEffect[nCntEffect].pos.y + (HEIGHTEFFECT / 2)* g_aEffect[nCntEffect].fLength, g_aEffect[nCntEffect].pos.z);
+		pVtx[0].pos = D3DXVECTOR3(0.0f,0.0f,0.0f);
+		pVtx[1].pos = D3DXVECTOR3(0.0f,0.0f,0.0f);
+		pVtx[2].pos = D3DXVECTOR3(0.0f,0.0f,0.0f);
+		pVtx[3].pos = D3DXVECTOR3(0.0f,0.0f,0.0f);
 
-		//頂点座標の設定
-		pVtx[0].pos.x = g_aEffect[nCntEffect].pos.x + sinf(g_aEffect[nCntEffect].rot.z - (D3DX_PI - g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-		pVtx[0].pos.y = g_aEffect[nCntEffect].pos.y + cosf(g_aEffect[nCntEffect].rot.z - (D3DX_PI - g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-		pVtx[0].pos.z = 0.0f;
-		pVtx[1].pos.x = g_aEffect[nCntEffect].pos.x + sinf(g_aEffect[nCntEffect].rot.z + (D3DX_PI - g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-		pVtx[1].pos.y = g_aEffect[nCntEffect].pos.y + cosf(g_aEffect[nCntEffect].rot.z + (D3DX_PI - g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-		pVtx[1].pos.z = 0.0f;
-		pVtx[2].pos.x = g_aEffect[nCntEffect].pos.x + sinf(g_aEffect[nCntEffect].rot.z + (0.0f - g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-		pVtx[2].pos.y = g_aEffect[nCntEffect].pos.y + cosf(g_aEffect[nCntEffect].rot.z + (0.0f - g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-		pVtx[2].pos.z = 0.0f;
-		pVtx[3].pos.x = g_aEffect[nCntEffect].pos.x + sinf(g_aEffect[nCntEffect].rot.z + (0.0f + g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-		pVtx[3].pos.y = g_aEffect[nCntEffect].pos.y + cosf(g_aEffect[nCntEffect].rot.z + (0.0f + g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-		pVtx[3].pos.z = 0.0f;
 
 
 		//rhwの設定
@@ -161,13 +150,17 @@ void UpdateEffect(void)
 			//頂点バッファをロックし、頂点データへのポインタを取得
 			g_pVtxBuffEffect->Lock(0, 0, (void**)&pVtx, 0);
 
-			//g_aEffect[nCntEffect].pos.x += g_aEffect[nCntEffect].move.x;
-			//g_aEffect[nCntEffect].pos.y += g_aEffect[nCntEffect].move.y;
-			//g_aEffect[nCntEffect].pos.z += g_aEffect[nCntEffect].move.z;
+			g_aEffect[nCntEffect].pos.x += g_aEffect[nCntEffect].move.x;
+			g_aEffect[nCntEffect].pos.y += g_aEffect[nCntEffect].move.y;
+			g_aEffect[nCntEffect].pos.z += g_aEffect[nCntEffect].move.z;
 
 			Enemy* pEnemy;//敵の情報へのポインタ
 			Player* pPlayer;
 			int nCntEnemy;
+
+			g_aEffect[nCntEffect].pos.x += g_aEffect[nCntEffect].move.x;
+			g_aEffect[nCntEffect].pos.y += g_aEffect[nCntEffect].move.y;
+
 
 			//敵の取得
 			pEnemy = GetEnemy();
@@ -183,19 +176,21 @@ void UpdateEffect(void)
 				g_aEffect[nCntEffect].bUse = false;//使用していない状態にする
 			}
 
-			//頂点座標の設定
-			pVtx[0].pos.x = g_aEffect[nCntEffect].pos.x + sinf(g_aEffect[nCntEffect].rot.z - (D3DX_PI - g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-			pVtx[0].pos.y = g_aEffect[nCntEffect].pos.y + cosf(g_aEffect[nCntEffect].rot.z - (D3DX_PI - g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-			pVtx[0].pos.z = 0.0f;
-			pVtx[1].pos.x = g_aEffect[nCntEffect].pos.x + sinf(g_aEffect[nCntEffect].rot.z + (D3DX_PI - g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-			pVtx[1].pos.y = g_aEffect[nCntEffect].pos.y + cosf(g_aEffect[nCntEffect].rot.z + (D3DX_PI - g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-			pVtx[1].pos.z = 0.0f;
-			pVtx[2].pos.x = g_aEffect[nCntEffect].pos.x + sinf(g_aEffect[nCntEffect].rot.z + (0.0f - g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-			pVtx[2].pos.y = g_aEffect[nCntEffect].pos.y + cosf(g_aEffect[nCntEffect].rot.z + (0.0f - g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-			pVtx[2].pos.z = 0.0f;
-			pVtx[3].pos.x = g_aEffect[nCntEffect].pos.x + sinf(g_aEffect[nCntEffect].rot.z + (0.0f + g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-			pVtx[3].pos.y = g_aEffect[nCntEffect].pos.y + cosf(g_aEffect[nCntEffect].rot.z + (0.0f + g_aEffect[nCntEffect].fAngle)) * g_aEffect[nCntEffect].fLength;
-			pVtx[3].pos.z = 0.0f;
+			if (g_aEffect[nCntEffect].fRadius <= 0.5f)
+			{
+				g_aEffect[nCntEffect].fRadius = 0.5f;
+			}
+
+			pVtx[0].pos = D3DXVECTOR3(g_aEffect[nCntEffect].pos.x - g_aEffect[nCntEffect].fRadius, g_aEffect[nCntEffect].pos.y - g_aEffect[nCntEffect].fRadius, 0.0f);
+			pVtx[1].pos = D3DXVECTOR3(g_aEffect[nCntEffect].pos.x + g_aEffect[nCntEffect].fRadius, g_aEffect[nCntEffect].pos.y - g_aEffect[nCntEffect].fRadius, 0.0f);
+			pVtx[2].pos = D3DXVECTOR3(g_aEffect[nCntEffect].pos.x - g_aEffect[nCntEffect].fRadius, g_aEffect[nCntEffect].pos.y + g_aEffect[nCntEffect].fRadius, 0.0f);
+			pVtx[3].pos = D3DXVECTOR3(g_aEffect[nCntEffect].pos.x + g_aEffect[nCntEffect].fRadius, g_aEffect[nCntEffect].pos.y + g_aEffect[nCntEffect].fRadius, 0.0f);
+
+			//頂点カラーの設定
+			pVtx[0].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.5f);
+			pVtx[1].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.5f);
+			pVtx[2].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.5f);
+			pVtx[3].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.5f);
 
 
 			g_aEffect[nCntEffect].nLife--;
@@ -205,25 +200,11 @@ void UpdateEffect(void)
 				g_aEffect[nCntEffect].bUse = false;//使用していない状態にする
 			}
 
-			if (g_aEffect[nCntEffect].nLife == 0)
+			if (g_aEffect[nCntEffect].nLife <= 0)
 			{
 				g_aEffect[nCntEffect].bUse = false;//使用していない状態にする
 			}
 
-
-
-				//for (nCntEnemy = 0; nCntEnemy < MAX_ENEMY; nCntEnemy++, pEnemy++)
-				//{
-				//	if (pEnemy->bUse == true)
-				//	{//敵が使用されている
-				//		if (g_aEffect[nCntEffect].pos.x >= pEnemy->pos.x - WIDTHENEMY / 2 && g_aEffect[nCntEffect].pos.x <= pEnemy->pos.x + WIDTHENEMY / 2 && g_aEffect[nCntEffect].pos.y >= pEnemy->pos.y - HEIGHTENEMY / 2 && g_aEffect[nCntEffect].pos.y <= pEnemy->pos.y + HEIGHTENEMY / 2)
-				//		{
-				//			HitEnemy(nCntEnemy, 50);
-				//			AddScore(10);
-				//			g_aEffect[nCntEffect].bUse = false;//エフェクトを使用してない状態にする
-				//		}
-				//	}
-				//}
 			g_pVtxBuffEffect->Unlock();
 
 		}
@@ -245,6 +226,8 @@ void DrawEffect(void)
 	//頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_2D);
 
+	//テクスチャの設定
+	pDevice->SetTexture(0, g_pTextureEffect);
 
 	//αブレンディングを加算合成に設定
 	pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
@@ -255,9 +238,6 @@ void DrawEffect(void)
 	{
 		if (g_aEffect[nCntEffect].bUse == true)
 		{//エフェクトが使用されている
-
-			//テクスチャの設定
-			pDevice->SetTexture(0, g_pTextureEffect);
 
 			//ポリゴンの描画
 			pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP,
@@ -273,13 +253,12 @@ void DrawEffect(void)
 }
 
 //エフェクトの設定処理
-void SetEffect(D3DXVECTOR3 pos, D3DXVECTOR3 col, float fRadius, int nLife)
+void SetEffect(D3DXVECTOR3 pos, D3DXCOLOR col, float fRadius, int nLife,D3DXVECTOR3 move)
 {
 	int nCntEffect;
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
 	g_pVtxBuffEffect->Lock(0, 0, (void**)&pVtx, 0);
-
 
 	for (nCntEffect = 0; nCntEffect < MAX_EFFECT; nCntEffect++)
 	{
@@ -288,18 +267,30 @@ void SetEffect(D3DXVECTOR3 pos, D3DXVECTOR3 col, float fRadius, int nLife)
 			g_aEffect[nCntEffect].pos = pos;
 			g_aEffect[nCntEffect].col = col;
 			g_aEffect[nCntEffect].nLife = nLife;
-			g_aEffect[nCntEffect].bUse = true;//使用している状態にする
+			g_aEffect[nCntEffect].move = move;
 			g_aEffect[nCntEffect].fRadius = fRadius;
+			g_aEffect[nCntEffect].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 			g_aEffect[nCntEffect].fLength = sqrtf(WIDTHEFFECT * WIDTHEFFECT + HEIGHTEFFECT * HEIGHTEFFECT) / 2.0f;
 			g_aEffect[nCntEffect].fAngle = atan2f(WIDTHEFFECT, HEIGHTEFFECT);
+			g_aEffect[nCntEffect].bUse = true;//使用している状態にする
+
+			pVtx[0].pos = D3DXVECTOR3(g_aEffect[nCntEffect].pos.x - g_aEffect[nCntEffect].fRadius, g_aEffect[nCntEffect].pos.y - g_aEffect[nCntEffect].fRadius, 0.0f);
+			pVtx[1].pos = D3DXVECTOR3(g_aEffect[nCntEffect].pos.x + g_aEffect[nCntEffect].fRadius, g_aEffect[nCntEffect].pos.y - g_aEffect[nCntEffect].fRadius, 0.0f);
+			pVtx[2].pos = D3DXVECTOR3(g_aEffect[nCntEffect].pos.x - g_aEffect[nCntEffect].fRadius, g_aEffect[nCntEffect].pos.y + g_aEffect[nCntEffect].fRadius, 0.0f);
+			pVtx[3].pos = D3DXVECTOR3(g_aEffect[nCntEffect].pos.x + g_aEffect[nCntEffect].fRadius, g_aEffect[nCntEffect].pos.y + g_aEffect[nCntEffect].fRadius, 0.0f);
+
+			//頂点カラーの設定
+			pVtx[0].col = g_aEffect[nCntEffect].col;
+			pVtx[1].col = g_aEffect[nCntEffect].col;
+			pVtx[2].col = g_aEffect[nCntEffect].col;
+			pVtx[3].col = g_aEffect[nCntEffect].col;
+
 
 			break;
 		}
 
 		pVtx += 4;
-
-
 	}
 	g_pVtxBuffEffect->Unlock();
-
 }
+

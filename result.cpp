@@ -2,9 +2,10 @@
 #include "input.h"
 #include "fade.h"
 #include "sound.h"
+#include "game.h"
 
 //グローバル変数
-LPDIRECT3DTEXTURE9 g_pTextureResult = NULL;//テクスチャへのポインタ
+LPDIRECT3DTEXTURE9 g_pTextureResult[2] = {};//テクスチャへのポインタ
 LPDIRECT3DVERTEXBUFFER9 g_pVtxBuffResult = NULL;//頂点バッファへのポインタ
 
 //タイトル画面の初期化処理
@@ -17,8 +18,14 @@ void InitResult(void)
 
 	//テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
-		"data/TEXTURE/result000.png",
-		&g_pTextureResult);
+		"data/TEXTURE/CLEAR.png",
+		&g_pTextureResult[0]);
+
+	//テクスチャの読み込み
+	D3DXCreateTextureFromFile(pDevice,
+		"data/TEXTURE/OVER.png",
+		&g_pTextureResult[1]);
+
 
 	//頂点バッファの作成
 	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4,
@@ -35,9 +42,9 @@ void InitResult(void)
 
 	//頂点座標の設定
 	pVtx[0].pos = D3DXVECTOR3(000.0f, 000.0f, 0.0f);
-	pVtx[1].pos = D3DXVECTOR3(1280.0f, 0.0f, 0.0f);
-	pVtx[2].pos = D3DXVECTOR3(0.0f, 720.0f, 0.0f);
-	pVtx[3].pos = D3DXVECTOR3(1280.0f, 720.0f, 0.0f);
+	pVtx[1].pos = D3DXVECTOR3(SCREEN_WIDTH, 0.0f, 0.0f);
+	pVtx[2].pos = D3DXVECTOR3(0.0f, SCREEN_HEIGHT, 0.0f);
+	pVtx[3].pos = D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f);
 
 	//rhwの設定
 	pVtx[0].rhw = 1.0f;
@@ -61,20 +68,30 @@ void InitResult(void)
 	//頂点バッファをアンロックする
 	g_pVtxBuffResult->Unlock();
 
-	//サウンドの設定
-	PlaySound(SOUND_LABEL_BGM02);
-
+	if (GetGameState() == GAMESTATE_END)
+	{
+		//サウンドの設定
+		PlaySound(SOUND_LABEL_BGM04);
+	}
+	else
+	{
+		//サウンドの設定
+		PlaySound(SOUND_LABEL_BGM05);
+	}
 
 }
 
 //タイトル画面の終了処理
 void UninitResult(void)
 {
-	//テクスチャの破棄
-	if (g_pTextureResult != NULL)
+	for (int nCnt = 0; nCnt > RESULT_MAX; nCnt++)
 	{
-		g_pTextureResult->Release();
-		g_pTextureResult = NULL;
+		//テクスチャの破棄
+		if (g_pTextureResult[nCnt] != NULL)
+		{
+			g_pTextureResult[nCnt]->Release();
+			g_pTextureResult[nCnt]= NULL;
+		}
 	}
 
 	//頂点バッファの破棄
@@ -94,7 +111,7 @@ void UpdateResult(void)
 	if (KeyboardTrigger(DIK_RETURN) == true|| GetJoypadPress(JOYKEY_A))
 	{//決定キー(ENTERキー)が押された
 		//モード設定(タイトル画面に移行)
-		SetFade(MODE_TITLE);
+		SetFade(MODE_RANKING);
 	}
 }
 
@@ -112,8 +129,16 @@ void DrawResult(void)
 	//頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_2D);
 
-	//テクスチャの設定
-	pDevice->SetTexture(0, g_pTextureResult);
+	if (GetGameState() == GAMESTATE_END)
+	{
+		//テクスチャの設定
+		pDevice->SetTexture(0, g_pTextureResult[0]);
+	}
+	else
+	{
+		//テクスチャの設定
+		pDevice->SetTexture(0, g_pTextureResult[1]);
+	}
 
 	//プレイヤーの描画
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);

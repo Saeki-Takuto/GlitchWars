@@ -6,6 +6,7 @@
 //グローバル変数
 LPDIRECT3DTEXTURE9 g_pTextureTitle = NULL;//テクスチャへのポインタ
 LPDIRECT3DVERTEXBUFFER9 g_pVtxBuffTitle = NULL;//頂点バッファへのポインタ
+int nCntTime=NULL;
 
 //タイトル画面の初期化処理
 void InitTitle(void)
@@ -35,9 +36,9 @@ void InitTitle(void)
 
 	//頂点座標の設定
 	pVtx[0].pos = D3DXVECTOR3(000.0f, 000.0f, 0.0f);
-	pVtx[1].pos = D3DXVECTOR3(1280.0f, 0.0f, 0.0f);
-	pVtx[2].pos = D3DXVECTOR3(0.0f, 720.0f, 0.0f);
-	pVtx[3].pos = D3DXVECTOR3(1280.0f, 720.0f, 0.0f);
+	pVtx[1].pos = D3DXVECTOR3(SCREEN_WIDTH, 0.0f, 0.0f);
+	pVtx[2].pos = D3DXVECTOR3(0.0f, SCREEN_HEIGHT, 0.0f);
+	pVtx[3].pos = D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f);
 
 	//rhwの設定
 	pVtx[0].rhw = 1.0f;
@@ -63,6 +64,8 @@ void InitTitle(void)
 
 	//サウンドの設定
 	PlaySound(SOUND_LABEL_BGM01);
+
+	nCntTime = NULL;
 }
 
 //タイトル画面の終了処理
@@ -95,6 +98,14 @@ void UpdateTitle(void)
 	{//決定キー(ENTERキー)が押された
 		//モード設定(ゲーム画面に移行)
 		SetFade(MODE_GAME);
+	}
+
+	nCntTime++;
+
+	if (nCntTime >= (60 * 47))
+	{
+		nCntTime = 0;
+		SetFade(MODE_RANKING);
 	}
 }
 

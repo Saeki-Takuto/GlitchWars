@@ -10,15 +10,14 @@
 #include "input.h"
 #include "bullet.h"
 #include "explosion.h"
-
-//マクロ定義
-#define NUM_ENEMY (3)//敵の種類
+#include "particle.h"
+#include "score.h"
 
 //グローバル変数
 LPDIRECT3DTEXTURE9 g_pTextureEnemy[NUM_ENEMY] = {};
 LPDIRECT3DVERTEXBUFFER9 g_pVtxBuffEnemy = NULL;
 Enemy g_aEnemy[MAX_ENEMY];
-int g_nNumEnemy = 0;//敵の総数
+int g_nNumEnemy;//敵の総数
 
 //敵の初期化処理
 void InitEnemy(void)
@@ -28,6 +27,9 @@ void InitEnemy(void)
 
 	//デバイスの取得
 	pDevice = GetDevice();
+
+	VERTEX_2D* pVtx;							//頂点情報へのポインタ
+
 
 	//テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
@@ -45,20 +47,46 @@ void InitEnemy(void)
 		&g_pTextureEnemy[2]);
 
 
+
+
+
+	for (nCntENEMY = 0; nCntENEMY < MAX_ENEMY; nCntENEMY++)
+	{
+
+		g_aEnemy[nCntENEMY].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+		g_aEnemy[nCntENEMY].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//向きを初期化する
+
+		g_aEnemy[nCntENEMY].nCntBull = 0;
+
+		g_aEnemy[nCntENEMY].nLife = 500;
+
+		g_aEnemy[nCntENEMY].bUse = false;
+
+		g_aEnemy[nCntENEMY].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+
+		g_aEnemy[nCntENEMY].nType = 0;
+
+		g_aEnemy[nCntENEMY].state = {};
+
+		int nCounterState = 0;
+
+		g_nNumEnemy = 0;
+	}
+
 	//頂点バッファの作成
-	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4 * NUM_ENEMY,
+	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4 * MAX_ENEMY,
 		D3DUSAGE_WRITEONLY,
 		FVF_VERTEX_2D,
 		D3DPOOL_MANAGED,
 		&g_pVtxBuffEnemy,
 		NULL);
 
-	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
 	//頂点バッファをロックし、頂点情報へのポインタを取得
 	g_pVtxBuffEnemy->Lock(0, 0, (void**)&pVtx, 0);
 
-	for (nCntENEMY = 0; nCntENEMY < NUM_ENEMY; nCntENEMY++)
+	for (nCntENEMY = 0; nCntENEMY < MAX_ENEMY; nCntENEMY++)
 	{
 		//頂点座標の設定
 		pVtx[0].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
@@ -74,10 +102,10 @@ void InitEnemy(void)
 
 
 		//頂点カラーの設定
-		pVtx[0].col = D3DCOLOR_RGBA(255, 255, 255, 255);
-		pVtx[1].col = D3DCOLOR_RGBA(255, 255, 255, 255);
-		pVtx[2].col = D3DCOLOR_RGBA(255, 255, 255, 255);
-		pVtx[3].col = D3DCOLOR_RGBA(255, 255, 255, 255);
+		pVtx[0].col = D3DXCOLOR(g_aEnemy[nCntENEMY].col);
+		pVtx[1].col = D3DXCOLOR(g_aEnemy[nCntENEMY].col);
+		pVtx[2].col = D3DXCOLOR(g_aEnemy[nCntENEMY].col);
+		pVtx[3].col = D3DXCOLOR(g_aEnemy[nCntENEMY].col);
 
 		//テクスチャ座標の設定
 		pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
@@ -85,11 +113,6 @@ void InitEnemy(void)
 		pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
 		pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
 
-		g_aEnemy[nCntENEMY].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//向きを初期化する
-
-		g_aEnemy[nCntENEMY].nCntBull = 0;
-
-		g_aEnemy[nCntENEMY].nLife = 500;
 
 		pVtx += 4;
 	}
@@ -140,18 +163,17 @@ void DrawEnemy(void)
 	//頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_2D);
 
-	for (nCntEnemy = 0; nCntEnemy < NUM_ENEMY; nCntEnemy++)
+	for (nCntEnemy = 0; nCntEnemy < MAX_ENEMY; nCntEnemy++)
 	{
 		if(g_aEnemy[nCntEnemy].bUse==true)
 		{
-			if (g_pTextureEnemy[nCntEnemy] != NULL)
-			{
-				//テクスチャの設定
-				pDevice->SetTexture(0, g_aEnemy[nCntEnemy].pTexture);
+			int nType = g_aEnemy[nCntEnemy].nType;
 
-					//プレイヤーの描画
-					pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, nCntEnemy * 4, 2);
-			}
+			//テクスチャの設定
+			pDevice->SetTexture(0, g_pTextureEnemy[nType]);
+
+			//プレイヤーの描画
+			pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, nCntEnemy * 4, 2);
 		}
 
 	}
@@ -163,20 +185,25 @@ void UpdateEnemy(void)
 	int nCntEnemy;
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
-	g_pVtxBuffEnemy->Lock(0, 0, (void**)&pVtx, 0);
 
 	for (nCntEnemy = 0; nCntEnemy < MAX_ENEMY; nCntEnemy++)
 	{	
 		if (g_aEnemy[nCntEnemy].bUse == true)
 		{
+
 			switch (g_aEnemy[nCntEnemy].state)
 			{
 			case ENEMYSTATE_NORMAL:
 				g_aEnemy[nCntEnemy].nCntBull++;
+				g_aEnemy[nCntEnemy].col.r = 1.0f;
+				g_aEnemy[nCntEnemy].col.g = 1.0f;
+				g_aEnemy[nCntEnemy].col.b = 1.0f;
+				g_aEnemy[nCntEnemy].col.a = 1.0f;
+
 				if (g_aEnemy[nCntEnemy].nCntBull >= 60)
 				{//SPACE
 					//弾の設定
-					SetBullet(g_aEnemy[nCntEnemy].pos, D3DXVECTOR3(5.0f, 0.0f, 0.0f), 0, BULLETTYPE_ENEMY);
+					SetBullet(g_aEnemy[nCntEnemy].pos, D3DXVECTOR3(5.0f, 0.0f, 0.0f), 50, BULLETTYPE_ENEMY);
 					g_aEnemy[nCntEnemy].nCntBull = 0;
 				}
 				break;
@@ -184,16 +211,34 @@ void UpdateEnemy(void)
 				g_aEnemy[nCntEnemy].nCounterState--;
 				if (g_aEnemy[nCntEnemy].nCounterState <= 0)
 				{
-					pVtx += 4 * nCntEnemy;
-					//頂点カラーの設定
-					pVtx[0].col = D3DCOLOR_RGBA(255, 255, 255, 255);
-					pVtx[1].col = D3DCOLOR_RGBA(255, 255, 255, 255);
-					pVtx[2].col = D3DCOLOR_RGBA(255, 255, 255, 255);
-					pVtx[3].col = D3DCOLOR_RGBA(255, 255, 255, 255);
+					g_aEnemy[nCntEnemy].col.r = 1.0f;
+					g_aEnemy[nCntEnemy].col.g = 1.0f;
+					g_aEnemy[nCntEnemy].col.b = 1.0f;
+					g_aEnemy[nCntEnemy].state = ENEMYSTATE_NORMAL;
+				}
+				break;
+			case ENEMYSTATE_DIE:
+				g_aEnemy[nCntEnemy].col.a -= 0.1f;
+				if (g_aEnemy[nCntEnemy].col.a <= 0.0f)
+				{
+					g_aEnemy[nCntEnemy].col.a = 0.0f;
+					g_aEnemy[nCntEnemy].bUse = false;
+					g_nNumEnemy--;//敵の総数カウントダウン
+					SetParticle(g_aEnemy[nCntEnemy].pos, 30);
 					g_aEnemy[nCntEnemy].state = ENEMYSTATE_NORMAL;
 				}
 				break;
 			}
+			g_pVtxBuffEnemy->Lock(0, 0, (void**)&pVtx, 0);
+
+			pVtx += 4 * nCntEnemy;
+
+			//頂点カラーの設定
+			pVtx[0].col = D3DXCOLOR(g_aEnemy[nCntEnemy].col);
+			pVtx[1].col = D3DXCOLOR(g_aEnemy[nCntEnemy].col);
+			pVtx[2].col = D3DXCOLOR(g_aEnemy[nCntEnemy].col);
+			pVtx[3].col = D3DXCOLOR(g_aEnemy[nCntEnemy].col);
+
 		}
 	}
 	g_pVtxBuffEnemy->Unlock();
@@ -201,7 +246,7 @@ void UpdateEnemy(void)
 }
 
 //敵の設定処理
-void SetEnemy(D3DXVECTOR3 pos, int nType)
+void SetEnemy(D3DXVECTOR3 pos, int nType,int nLife)
 {
 	int nCntEnemy;
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
@@ -214,18 +259,9 @@ void SetEnemy(D3DXVECTOR3 pos, int nType)
 		{
 			g_aEnemy[nCntEnemy].pos = pos;
 			g_aEnemy[nCntEnemy].bUse = true;//使用している状態にする
-
+			g_aEnemy[nCntEnemy].nLife = nLife;
 			g_aEnemy[nCntEnemy].nType = nType; // 敵の種類を設定
-
-			// テクスチャを設定する
-			if (nType >= 0 && nType < NUM_ENEMY)
-			{
-				g_aEnemy[nCntEnemy].pTexture = g_pTextureEnemy[nType];
-			}
-			else
-			{
-				g_aEnemy[nCntEnemy].pTexture = NULL; // 無効なタイプの場合
-			}
+			g_aEnemy[nCntEnemy].state = ENEMYSTATE_NORMAL;
 
 			//頂点バッファをロックし、頂点データへのポインタを取得
 			pVtx[0].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x - (WIDTHENEMY / 2), g_aEnemy[nCntEnemy].pos.y - (HEIGHTENEMY / 2), g_aEnemy[nCntEnemy].pos.z);
@@ -250,42 +286,36 @@ Enemy* GetEnemy(void)
 
 void HitEnemy(int nCntEnemy, int nDamage)
 {
-	VERTEX_2D* pVtx;							//頂点情報へのポインタ
-
-	g_aEnemy[nCntEnemy].nLife -= nDamage;
-
-
-	if (g_aEnemy[nCntEnemy].nLife == 0)
-	{
-		SetExplosion(g_aEnemy[nCntEnemy].pos, g_aEnemy[nCntEnemy].nLife);
-		g_nNumEnemy--;//敵の総数カウントダウン
-		g_aEnemy[nCntEnemy].bUse = false;
+	//VERTEX_2D* pVtx;							//頂点情報へのポインタ
+		g_aEnemy[nCntEnemy].nLife -= nDamage;
+		AddScore(100);
 
 
-		//if (g_nNumEnemy <= 0)
-		//{
-		//	//モード設定(リザルト画面に移行)
-		//	SetMode(MODE_RESULT);
-		//}
+		if (g_aEnemy[nCntEnemy].nLife <= 0)
+		{
+			g_aEnemy[nCntEnemy].nLife = 0;
+			g_aEnemy[nCntEnemy].state = ENEMYSTATE_DIE;
+		}
+		else
+		{
+			//g_pVtxBuffEnemy->Lock(0, 0, (void**)&pVtx, 0);
 
-	}
-	else
-	{
-		g_pVtxBuffEnemy->Lock(0, 0, (void**)&pVtx, 0);
+			g_aEnemy[nCntEnemy].state = ENEMYSTATE_DAMAGE;
+			g_aEnemy[nCntEnemy].nCounterState = 5;
+			g_aEnemy[nCntEnemy].col.r = 1.0f;
+			g_aEnemy[nCntEnemy].col.g = 0.0f;
+			g_aEnemy[nCntEnemy].col.b = 0.0f;
 
-		g_aEnemy[nCntEnemy].state = ENEMYSTATE_DAMAGE;
-		g_aEnemy[nCntEnemy].nCounterState = 5;
-		pVtx += 4 * nCntEnemy;
-		//頂点カラーの設定
-		pVtx[0].col = D3DCOLOR_RGBA(255, 0, 0, 255);
-		pVtx[1].col = D3DCOLOR_RGBA(255, 0, 0, 255);
-		pVtx[2].col = D3DCOLOR_RGBA(255, 0, 0, 255);
-		pVtx[3].col = D3DCOLOR_RGBA(255, 0, 0, 255);
+			//pVtx += 4 * nCntEnemy;
+			////頂点カラーの設定
+			//pVtx[0].col = D3DCOLOR_RGBA(255, 0, 0, 255);
+			//pVtx[1].col = D3DCOLOR_RGBA(255, 0, 0, 255);
+			//pVtx[2].col = D3DCOLOR_RGBA(255, 0, 0, 255);
+			//pVtx[3].col = D3DCOLOR_RGBA(255, 0, 0, 255);
 
-		g_pVtxBuffEnemy->Unlock();
+			//g_pVtxBuffEnemy->Unlock();
 
-	}
-
+		}
 }
 
 int GetNumEnemy()

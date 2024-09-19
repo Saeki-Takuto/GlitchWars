@@ -36,9 +36,13 @@ SOUNDINFO g_aSoundInfo[SOUND_LABEL_MAX] =
 	{"data/BGM/title002.wav", -1},       //BGM1
 	{"data/BGM/result001.wav", -1},       //BGM2
 	{"data/BGM/game000.wav", -1},       //BGM3
-	{"data/BGM/Play4.wav", -1},       //BGM4
+	{"data/BGM/CLEAR.wav", -1},       //BGM4
+	{"data/BGM/GAMEOVER.wav", -1},       //BGM5
 
 	{"data/SE/Click.wav", 0},            //SE1
+	{"data/SE/Error.wav", 0},            //SE2
+	{"data/SE/Dong.wav", 0},            //SE2
+
 
 };
 

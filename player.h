@@ -9,8 +9,8 @@
 #define _PLAYER_H_//2重インクルード防止のマクロ定義
 #define FLAME (10)
 #define SPEED (5)
-#define WIDTH (200)
-#define HEIGHT (300)
+#define WIDTH (100)
+#define HEIGHT (150)
 
 #include"main.h"
 

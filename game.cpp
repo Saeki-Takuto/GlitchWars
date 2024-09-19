@@ -9,10 +9,17 @@
 #include "score.h"
 #include "sound.h"
 #include "effect.h"
+#include "pause.h"
+#include "particle.h"
+#include "rankingscore.h"
+#include "time.h"
+#include "wave.h"
+#include "memory.h"
 
 //グローバル変数宣言
 GAMESTATE g_gameState = GAMESTATE_NONE;//ゲームの状態
 int g_nCounterGameState=0;//状態管理カウンター
+bool g_bPause = false;//ポーズ中かどうか
 
 //ゲーム画面の初期化処理
 void InitGame(void)
@@ -29,11 +36,10 @@ void InitGame(void)
 	//プレイヤーの初期化処理
 	InitPlayer();
 
+	InitParticle();
+
 	//敵の初期化処理
 	InitEnemy();
-	SetEnemy(D3DXVECTOR3(200.0f, 200.0f, 0.0f), 0);
-	SetEnemy(D3DXVECTOR3(600.0f, 200.0f, 0.0f), 0);
-	SetEnemy(D3DXVECTOR3(900.0f, 200.0f, 0.0f), 0);
 
 	//爆発の初期化処理
 	InitExplosion();
@@ -41,8 +47,21 @@ void InitGame(void)
 	//スコアの初期化処理
 	InitScore();
 
+	//タイムの初期化処理
+	InitTime();
+
+	InitMemory();
+
+	//ウェーブの初期化処理
+	InitWave();
+
+	//ポーズの初期化処理
+	InitPause();
+
 	g_gameState = GAMESTATE_NORMAL;//通常状態に設定
 	g_nCounterGameState = 0;
+
+	g_bPause = false;//ポーズ解除
 
 	PlaySound(SOUND_LABEL_BGM03);
 }
@@ -50,6 +69,9 @@ void InitGame(void)
 //ゲーム画面の終了処理
 void UninitGame(void)
 {
+	//ポーズの終了処理
+	UninitPause();
+
 	//爆発の終了処理
 	UninitExplosion();
 
@@ -71,6 +93,14 @@ void UninitGame(void)
 	//スコアの終了処理
 	UninitScore();
 
+	//タイムの終了処理
+	UninitTime();
+
+	UninitMemory();
+
+	//ウェーブの終了処理
+	UninitWave();
+
 	StopSound();
 }
 
@@ -78,58 +108,123 @@ void UninitGame(void)
 void UpdateGame(void)
 {
 	int nNum;
-
-	//背景の更新処理
-	UpdateBack();
-
-	//弾の更新処理
-	UpdateBullet();
-
-	//エフェクトの更新処理
-	UpdateEffect();
-
-	//プレイヤーの更新処理
-	UpdatePlayer();
-
-	//敵の更新処理
-	UpdateEnemy();
-
-	//爆発の更新処理
-	UpdateExplosion();
-
-	//スコアの更新処理
-	UpdateScore();
-
-	//プレイヤーの取得
-	Player* pPlayer = GetPlayer();
-	Enemy* pEnemy = GetEnemy();
-
-	nNum = GetNumEnemy();
-
-	if (nNum <= 0)//敵が全員死んだ場合
-	{
-		g_gameState = GAMESTATE_END;
-	}
-	else if (pPlayer->bUse == false)
-	{
-		g_gameState = GAMESTATE_END;
+	int nNum2;
+	int nNum3;
+	if (KeyboardTrigger(DIK_P) == true)
+	{//ポーズキー(P)が押された
+		g_bPause = g_bPause ? false : true;
 	}
 
-	switch (g_gameState)
-	{
-	case GAMESTATE_NORMAL://通常状態
-		break;
-	case GAMESTATE_END://終了状態
-   		g_nCounterGameState++;
-		if (g_nCounterGameState >= 60)
+	if (g_bPause == true)
+	{//ポーズ中
+		UpdatePause();
+	}
+
+	if (g_bPause == false)
+	{//ポーズ中でなければ
+			//背景の更新処理
+		UpdateBack();
+
+		//弾の更新処理
+		UpdateBullet();
+
+		//エフェクトの更新処理
+		UpdateEffect();
+
+		//プレイヤーの更新処理
+		UpdatePlayer();
+
+		//敵の更新処理
+		UpdateEnemy();
+
+		//爆発の更新処理
+		UpdateExplosion();
+
+		UpdateParticle();
+
+		////パーティクル
+		//SetParticle(D3DXVECTOR3(400.0f,150.0f,0.0f),20);
+
+		//スコアの更新処理
+		UpdateScore();
+
+		//タイムの更新処理
+		UpdateTime();
+
+		UpdateMemory();
+
+		//ウェーブの更新処理
+		UpdateWave();
+
+
+		Enemy* pEnemy = GetEnemy();
+		Player* pPlayer = GetPlayer();
+
+		nNum2 = GetTime();
+		nNum = GetNumEnemy();
+		nNum3 = GetMemory();
+
+		if (nNum <= 0)//敵が全員死んだ場合
 		{
-			//モード設定(リザルト画面に移行)
-			SetFade(MODE_RESULT);
-			g_nCounterGameState = 0;
-			g_gameState = GAMESTATE_NONE;//何もしていない状態に設定
+		}
+		else if (pPlayer->bUse == false)
+		{
+			g_gameState = GAMESTATE_GAMEOVER;
+		}
+		else if (nNum2 <= 0)//時間が0になった場合
+		{
+			g_gameState = GAMESTATE_END;
+		}
+		else if (nNum3>=100)
+		{
+			g_gameState = GAMESTATE_GAMEOVER;
+		}
+
+
+		switch (g_gameState)
+		{
+		case GAMESTATE_NORMAL://通常状態
+			break;
+		case GAMESTATE_END://終了状態
+			g_nCounterGameState++;
+			if (g_nCounterGameState >= 60)
+			{
+				//モード設定(リザルト画面に移行)
+				SetFade(MODE_RESULT);
+
+				ResetRanking();
+
+				//ランキングの設定
+				SetRankingScore(GetScore());
+
+				g_nCounterGameState = 0;
+				g_gameState = GAMESTATE_NONE;//何もしていない状態に設定
+
+			}
+			break;
+		case GAMESTATE_GAMEOVER://終了状態
+			g_nCounterGameState++;
+			if (g_nCounterGameState >= 60)
+			{
+				////モード設定(リザルト画面に移行)
+				//SetFade(MODE_RESULT);
+
+				SetMode(MODE_BSOD);
+
+				ResetRanking();
+
+				//ランキングの設定
+				SetRankingScore(GetScore());
+
+				g_nCounterGameState = 0;
+				g_gameState = GAMESTATE_NONE;//何もしていない状態に設定
+
+			}
+			break;
 
 		}
-		break;
+
+
 	}
 
 
@@ -139,7 +234,7 @@ void UpdateGame(void)
 void DrawGame(void)
 {
 	//背景の描画処理
-	DrawBack();//back
+	DrawBack();
 
 	//弾の描画処理
 	DrawBullet();
@@ -158,6 +253,17 @@ void DrawGame(void)
 
 	//スコアの描画処理
 	DrawScore();
+
+	//タイムの描画処理
+	DrawTime();
+
+	DrawMemory();
+
+
+	if (g_bPause == true)
+	{
+		DrawPause();
+	}
 }
 
 //ゲームの状態の設定
@@ -171,4 +277,10 @@ void SetGameState(GAMESTATE state)
 GAMESTATE GetGameState(void)
 {
 	return g_gameState;
+}
+
+//ポーズの有効無効設定
+void SetEnablePause(bool bPause)
+{
+	g_bPause = bPause;
 }

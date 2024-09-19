@@ -14,6 +14,7 @@
 #include "sound.h"
 #include "effect.h"
 #include "fade.h"
+#include "particle.h"
 
 
 //グローバル変数
@@ -47,7 +48,9 @@ void InitPlayer(void)
 	g_player.rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//向きを初期化する
 	g_player.bDisp = true;//画面表示状態を初期化する
 	g_player.bUse = true;
-	g_player.nLife = 10;
+	g_player.nLife = 200;
+	g_player.state = PLAYERSTATE_NORMAL;
+	g_player.nCounterState = 0;
 
 	//対角線の長さを算出する
 	g_fLengthPlayer = sqrtf(WIDTH * WIDTH + HEIGHT * HEIGHT) / 2.0f;
@@ -134,6 +137,8 @@ void UninitPlayer(void)
 //プレイヤーの更新処理
 void UpdatePlayer(void)
 {
+	VERTEX_2D* pVtx;							//頂点情報へのポインタ
+
 	switch (g_player.state)
 	{
 	case PLAYERSTATE_NORMAL:
@@ -143,22 +148,28 @@ void UpdatePlayer(void)
 		g_player.nCounterState--;
 		if (g_player.nCounterState <= 0)
 		{
+			g_pVtxBuffPlayer->Lock(0, 0, (void**)&pVtx, 0);
+
 			g_player.nCounterState = PLAYERSTATE_NORMAL;
-			//頂点カラーの設定(通常職に戻す)(後で打ち込む)
+
+			//頂点カラーの設定
+			pVtx[0].col = D3DCOLOR_RGBA(255, 255, 255, 255);
+			pVtx[1].col = D3DCOLOR_RGBA(255, 255, 255, 255);
+			pVtx[2].col = D3DCOLOR_RGBA(255, 255, 255, 255);
+			pVtx[3].col = D3DCOLOR_RGBA(255, 255, 255, 255);
+
+			g_pVtxBuffPlayer->Unlock();
 		}
 		break;
 	case PLAYERSTATE_DEATH:
 		g_player.nCounterState--;
 		if (g_player.nCounterState <= 0)
 		{
-			//モード設定(リザルト画面に移行)
-			SetFade(MODE_RESULT);
 			return;
 		}
 		break;
 	}
 
-	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
 	if (KeyboardRepeat(DIK_A) == true||JoypadRepeat(JOYKEY_LEFT)||JoypadStickLX1())
 	{//Aキーが押された
@@ -260,15 +271,18 @@ void UpdatePlayer(void)
 		}
 	}
 
-	if (KeyboardTrigger(DIK_SPACE) == true|| JoypadTrigger(JOYKEY_A))
-	{//SPACE
-		//弾の設定
-		//SetBullet(g_player.pos, g_player.move);
+	if (g_player.bUse == true)
+	{
+		if (KeyboardTrigger(DIK_SPACE) == true || JoypadTrigger(JOYKEY_A))
+		{//SPACE
+			//弾の設定
+			//SetBullet(g_player.pos, g_player.move);
 
-		SetBullet(g_player.pos, D3DXVECTOR3(sinf(g_player.rot.z + D3DX_PI) * 20.0f, cosf(g_player.rot.z + D3DX_PI) * 20.0f, 0.0f),0,BULLETTYPE_PLAYER);
-		PlaySound(SOUND_LABEL_SE01);
-		//SetBullet(g_player.pos, D3DXVECTOR3(sinf(g_player.rot.z + D3DX_PI*0.75) * 5.0f, cosf(g_player.rot.z + D3DX_PI * 0.75) * 5.0f, 0.0f));
-		//SetBullet(g_player.pos, D3DXVECTOR3(sinf(g_player.rot.z + D3DX_PI*-0.75) * 5.0f, cosf(g_player.rot.z + D3DX_PI * -0.75) * 5.0f, 0.0f));
+			SetBullet(g_player.pos, D3DXVECTOR3(sinf(g_player.rot.z + D3DX_PI) * 20.0f, cosf(g_player.rot.z + D3DX_PI) * 20.0f, 0.0f), 100, BULLETTYPE_PLAYER);
+			PlaySound(SOUND_LABEL_SE01);
+			//SetBullet(g_player.pos, D3DXVECTOR3(sinf(g_player.rot.z + D3DX_PI*0.75) * 5.0f, cosf(g_player.rot.z + D3DX_PI * 0.75) * 5.0f, 0.0f));
+			//SetBullet(g_player.pos, D3DXVECTOR3(sinf(g_player.rot.z + D3DX_PI*-0.75) * 5.0f, cosf(g_player.rot.z + D3DX_PI * -0.75) * 5.0f, 0.0f));
+		}
 	}
 
 
@@ -276,6 +290,31 @@ void UpdatePlayer(void)
 	//位置を更新
 	g_player.pos.x += g_player.move.x;
 	g_player.pos.y += g_player.move.y;
+
+	if (g_player.pos.x >= SCREEN_WIDTH - 50)
+	{
+		g_player.pos.x = SCREEN_WIDTH - 50;
+		g_player.move.x = 0.0f;
+
+	}
+	else if (g_player.pos.x <= 50)
+	{
+		g_player.pos.x = 50;
+		g_player.move.x = 0.0f;
+	}
+
+	if (g_player.pos.y >= SCREEN_HEIGHT - 75)
+	{
+		g_player.pos.y = SCREEN_HEIGHT - 75;
+		g_player.move.y = 0.0f;
+
+	}
+	else if (g_player.pos.y <= 75)
+	{
+		g_player.pos.y = 75;
+		g_player.move.y = 0.0f;
+	}
+
 
 	//移動量を更新(減衰させる)
 	g_player.move.x += (0.0f - g_player.move.x) * 0.05f;
@@ -370,18 +409,30 @@ Player* GetPlayer(void)
 //プレイヤーのヒット処理
 void HitPlayer(int nDamage)
 {
+	VERTEX_2D* pVtx;							//頂点情報へのポインタ
+
 	g_player.nLife -= nDamage;
 	if (g_player.nLife <= 0)
 	{
-		//爆発の設定(後で打ち込む)
+		SetParticle(g_player.pos, 20);
 		g_player.bDisp = false;
+		g_player.bUse = false;
 		g_player.state = PLAYERSTATE_DEATH;
 		g_player.nCounterState = 60;
 	}
 	else
 	{
+		g_pVtxBuffPlayer->Lock(0, 0, (void**)&pVtx, 0);
+
 		g_player.state = PLAYERSTATE_DAMAGE;
 		g_player.nCounterState = 5;
-		//頂点カラーの設定(後で打ち込む)
+
+		//頂点カラーの設定
+		pVtx[0].col = D3DCOLOR_RGBA(255, 0, 0, 255);
+		pVtx[1].col = D3DCOLOR_RGBA(255, 0, 0, 255);
+		pVtx[2].col = D3DCOLOR_RGBA(255, 0, 0, 255);
+		pVtx[3].col = D3DCOLOR_RGBA(255, 0, 0, 255);
+
+		g_pVtxBuffPlayer->Unlock();
 	}
 }

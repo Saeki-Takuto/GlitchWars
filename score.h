@@ -14,5 +14,6 @@ void UpdateScore(void);
 void DrawScore(void);
 void SetScore(int nScore);
 void AddScore(int nValue);
+int GetScore(void);
 
 #endif

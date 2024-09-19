@@ -33,9 +33,9 @@ void InitFade(MODE modeNext)
 
 	//頂点座標の設定
 	pVtx[0].pos = D3DXVECTOR3(000.0f, 000.0f, 0.0f);
-	pVtx[1].pos = D3DXVECTOR3(1280.0f, 0.0f, 0.0f);
-	pVtx[2].pos = D3DXVECTOR3(0.0f, 720.0f, 0.0f);
-	pVtx[3].pos = D3DXVECTOR3(1280.0f, 720.0f, 0.0f);
+	pVtx[1].pos = D3DXVECTOR3(SCREEN_WIDTH, 0.0f, 0.0f);
+	pVtx[2].pos = D3DXVECTOR3(0.0f, SCREEN_HEIGHT, 0.0f);
+	pVtx[3].pos = D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f);
 
 	//rhwの設定
 	pVtx[0].rhw = 1.0f;
@@ -84,7 +84,7 @@ void UpdateFade(void)
 	{
 		if (g_fade == FADE_IN)
 		{//フェードイン状態
-			g_colorFade.a -= 0.1;//ポリゴンを透明にしていく
+			g_colorFade.a -= 0.1f;//ポリゴンを透明にしていく
 			if (g_colorFade.a <= 0.0f)
 			{
 				g_colorFade.a = 0.0f;
@@ -93,7 +93,7 @@ void UpdateFade(void)
 		}
 		else if (g_fade == FADE_OUT)
 		{//フェードアウト状態
-			g_colorFade.a += 0.1;//ポリゴンを不透明にしていく
+			g_colorFade.a += 0.1f;//ポリゴンを不透明にしていく
 			if (g_colorFade.a >= 1.0f)
 			{
 				g_colorFade.a = 1.0f;
@@ -143,9 +143,12 @@ void DrawFade(void)
 //フェードの設定処理
 void SetFade(MODE modeNext)
 {
-	g_fade = FADE_OUT;//フェードアウト状態に
-	g_modeNext = modeNext;//次の画面(モード)を設定
-	g_colorFade = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);//黒いポリゴン(透明)にしておく
+	if (GetFade() != FADE_OUT)
+	{
+		g_fade = FADE_OUT;//フェードアウト状態に
+		g_modeNext = modeNext;//次の画面(モード)を設定
+		g_colorFade = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);//黒いポリゴン(透明)にしておく
+	}
 }
 
 //フェードの取得処理

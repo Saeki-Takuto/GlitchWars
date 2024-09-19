@@ -9,7 +9,7 @@
 #include "back.h"
 
 //マクロ定義
-#define NUM_BG (3)//背景の数
+#define NUM_BG (2)//背景の数
 
 
 //グローバル変数
@@ -35,7 +35,7 @@ void InitBack(void)
 
 	//テクスチャ2の読み込み
 	D3DXCreateTextureFromFile(pDevice,
-							  "data/TEXTURE/bg101.png",
+							  "data/TEXTURE/001.png",
 							  &g_pTextureBack[1]);
 	//テクスチャ3の読み込み
 	D3DXCreateTextureFromFile(pDevice,
@@ -69,9 +69,9 @@ void InitBack(void)
 	{
 		//頂点座標の設定
 		pVtx[0].pos = D3DXVECTOR3(000.0f, 000.0f, 0.0f);
-		pVtx[1].pos = D3DXVECTOR3(1280.0f, 0.0f, 0.0f);
-		pVtx[2].pos = D3DXVECTOR3(0.0f, 720.0f, 0.0f);
-		pVtx[3].pos = D3DXVECTOR3(1280.0f, 720.0f, 0.0f);
+		pVtx[1].pos = D3DXVECTOR3(SCREEN_WIDTH, 0.0f, 0.0f);
+		pVtx[2].pos = D3DXVECTOR3(0.0f, SCREEN_HEIGHT, 0.0f);
+		pVtx[3].pos = D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f);
 
 		//rhwの設定
 		pVtx[0].rhw = 1.0f;
@@ -134,7 +134,7 @@ void UpdateBack(void)
 
 	for (nCntBG = 0; nCntBG < NUM_BG; nCntBG++)
 	{
-		g_aPosTexU[nCntBG] += 0.001f*(nCntBG+1);
+		g_aPosTexU[nCntBG] += 0.001f*(nCntBG);
 
 		//テクスチャ座標の設定
 		pVtx[0].tex = D3DXVECTOR2(g_aPosTexU[nCntBG], 0.0f);

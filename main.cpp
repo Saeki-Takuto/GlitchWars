@@ -17,11 +17,15 @@
 #include "result.h"
 #include "fade.h"
 #include "sound.h"
+#include "ranking.h"
+#include "Bsod.h"
 
 //グローバル変数宣言
 LPDIRECT3D9 g_pD3D = NULL;				//Direct3Dオブジェクトへのポインタ
 LPDIRECT3DDEVICE9 g_pD3DDevice = NULL;	//Direct3Dデバイスへのポインタ
 MODE g_mode = MODE_TITLE;//現在のモード
+LPD3DXFONT g_pFont = NULL;//フォントへのポインタ
+int g_nCountFPS = 0;//FPSカウンタ
 
 //================================================
 //メイン関数
@@ -87,6 +91,12 @@ int WINAPI WinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hInstancePrev, 
 	ShowWindow(hWnd, nCmdShow);						//ウィンドウの表示状態を設定
 	UpdateWindow(hWnd);								//クライアント領域を更新
 
+	DWORD dwFrameCount;//フレームカウント
+	DWORD dwFPSLastTime;//最後にFPSを計測した時刻
+
+	dwFrameCount = 0;
+	dwFPSLastTime = timeGetTime();
+
 	//メッセージループ
 	while (1)
 	{
@@ -104,11 +114,21 @@ int WINAPI WinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hInstancePrev, 
 		}
 		else
 		{//DirectXの処理
-			dwCurrentTime = timeGetTime();
+			dwCurrentTime = timeGetTime();//現在時刻を取得
 
+			if ((dwCurrentTime - dwFPSLastTime) >= 500)
+			{//0.5秒経過
+				//FPSを計測
+				g_nCountFPS = (dwFrameCount * 1000) / (dwCurrentTime - dwFPSLastTime);
+
+				dwFPSLastTime = dwCurrentTime;//FPSを測定した時刻を保存
+				dwFrameCount = 0;//フレームカウントをクリア
+
+			}
 			if ((dwCurrentTime - dwExecLastTime) >= (1000 / 60))
 			{//60分の1秒経過
 				dwExecLastTime = dwCurrentTime;		//処理開始の時刻[現在時刻]を保存
+				dwFrameCount++;//フレームカウントを加算
 				//更新処理
 				Update();
 
@@ -229,6 +249,12 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	g_pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 	g_pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
 
+	//デバッグ表示用フォントの生成
+	D3DXCreateFont(g_pD3DDevice, 32, 0, 0, 0,
+				   FALSE, SHIFTJIS_CHARSET,
+				   OUT_DEFAULT_PRECIS,DEFAULT_QUALITY,DEFAULT_PITCH,
+				   "Terminal",&g_pFont);
+
 	//キーボードの初期化処理
 	if (FAILED(InitKeyboard(hInstance, hWnd)))
 	{
@@ -277,6 +303,13 @@ void Uninit(void)
 	//ジョイパッドの終了処理
 	UninitJoypad();
 
+	//デバッグ表示用フォントの破棄
+	if (g_pFont != NULL)
+	{
+		g_pFont->Release();
+		g_pFont = NULL;
+	}
+
 	//Direct3Dデバイスの破棄
 	if (g_pD3DDevice != NULL)
 	{
@@ -312,6 +345,12 @@ void Update(void)
 	case MODE_RESULT://リザルト画面
 		UpdateResult();
 		break;
+	case MODE_RANKING://ランキング
+		UpdateRanking();
+		break;
+	case MODE_BSOD:
+		UpdateBsod();
+		break;
 	}
 
 	//フェードの更新処理
@@ -342,10 +381,29 @@ void Draw(void)
 		case MODE_RESULT://リザルト画面
 			DrawResult();
 			break;
+		case MODE_RANKING://ランキング画面
+			DrawRanking();
+			break;
+		case MODE_BSOD:
+			DrawBsod();
+			break;
 		}
 
 		//フェードの描画処理
 		DrawFade();
+
+#ifdef _DEBUG
+
+		Player* pPlayer;
+
+		int nCntPlayer;
+
+		pPlayer = GetPlayer();
+
+		//デバッグの表示
+		DrawDEBUG(pPlayer->pos.x, pPlayer->pos.y, pPlayer->pos.z);
+
+#endif
 
 		//描画終了
 		g_pD3DDevice->EndScene();
@@ -370,6 +428,12 @@ void SetMode(MODE mode)
 	case MODE_RESULT://リザルト画面
 		UninitResult();
 		break;
+	case MODE_RANKING://ランキング画面
+		UninitRanking();
+		break;
+	case MODE_BSOD:
+		UninitBsod();
+		break;
 	}
 
 	//新しい画面(モード)の初期化処理
@@ -384,6 +448,12 @@ void SetMode(MODE mode)
 	case MODE_RESULT://リザルト画面
 		InitResult();
 		break;
+	case MODE_RANKING://ランキング画面
+		InitRanking();
+		break;
+	case MODE_BSOD:
+		InitBsod();
+		break;
 	}
 
 	g_mode = mode;//現在の画面(モード)を切り替える
@@ -393,6 +463,19 @@ void SetMode(MODE mode)
 MODE GetMode(void)
 {
 	return g_mode;
+}
+
+//デバッグの表示
+void DrawDEBUG(float Playerposx, float Playerposy, float Playerposz)
+{
+	RECT rect = { 0,0,SCREEN_WIDTH,SCREEN_HEIGHT };
+	char aStr[256];
+
+	//文字列に代入
+	wsprintf(&aStr[0], "FPS:%d\n",g_nCountFPS,Playerposx,Playerposy,Playerposz);
+
+	//テキストの描画
+	g_pFont->DrawTextA(NULL, &aStr[0], -1, &rect, DT_LEFT, D3DCOLOR_RGBA(255, 0, 0, 255));
 }
 
 //デバイスの取得

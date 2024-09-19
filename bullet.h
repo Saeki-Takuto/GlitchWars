@@ -15,6 +15,7 @@ typedef enum
 {
 	BULLETTYPE_PLAYER=0,//プレイヤーの取得
 	BULLETTYPE_ENEMY,//敵の弾
+	BULLETTYPE_HOMING,
 	BULLETTYPE_MAX
 }BULLETTYPE;
 
@@ -28,7 +29,7 @@ void SetBullet(D3DXVECTOR3 pos,D3DXVECTOR3 move,int nLife,BULLETTYPE type);
 
 
 //マクロ定義
-#define WIDTHBULLET (50)
-#define HEIGHTBULLET (50)
+#define WIDTHBULLET (30)
+#define HEIGHTBULLET (30)
 
 #endif

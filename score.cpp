@@ -43,10 +43,10 @@ void InitScore(void)
 	for (nCntScore = 0; nCntScore < MAX_KETA; nCntScore++)
 	{
 		//頂点座標の設定
-		pVtx[0].pos = D3DXVECTOR3(1000.0f+nCntScore*30.0f, 0.0f, 0.0f);
-		pVtx[1].pos = D3DXVECTOR3(1000.0f+nCntScore*30.0f+30.0f, 0.0f, 0.0f);
-		pVtx[2].pos = D3DXVECTOR3(1000.0f+nCntScore*30.0f, 50.0f, 0.0f);
-		pVtx[3].pos = D3DXVECTOR3(1000.0f+nCntScore*30.0f+30.0f, 50.0f, 0.0f);
+		pVtx[0].pos = D3DXVECTOR3(SCREEN_WIDTH-250+nCntScore*30.0f, 0.0f, 0.0f);
+		pVtx[1].pos = D3DXVECTOR3(SCREEN_WIDTH - 250 +nCntScore*30.0f+30.0f, 0.0f, 0.0f);
+		pVtx[2].pos = D3DXVECTOR3(SCREEN_WIDTH - 250 +nCntScore*30.0f, 50.0f, 0.0f);
+		pVtx[3].pos = D3DXVECTOR3(SCREEN_WIDTH - 250 +nCntScore*30.0f+30.0f, 50.0f, 0.0f);
 
 		//rhwの設定
 		pVtx[0].rhw = 1.0f;
@@ -142,7 +142,7 @@ void SetScore(int nScore)
 	//桁ごとに分割する
 	for (nCntScore = 0; nCntScore < MAX_KETA; nCntScore++)
 	{
-		if (aPosTexU[nCntScore] == aPosTexU[0])
+		if (nCntScore==0)
 		{
 			aPosTexU[0] = nScore / nData1;
 		}
@@ -184,7 +184,7 @@ void AddScore(int nValue)
 	//桁ごとに分割する
 	for (nCntScore = 0; nCntScore < MAX_KETA; nCntScore++)
 	{
-		if (aPosTexU[nCntScore] == aPosTexU[0])
+		if (nCntScore == 0)
 		{
 			aPosTexU[0] = g_nScore / nData1;
 		}
@@ -206,4 +206,10 @@ void AddScore(int nValue)
 	g_pVtxBuffScore->Unlock();
 
 
+}
+
+//スコア取得
+int GetScore(void)
+{
+	return g_nScore;
 }

@@ -14,6 +14,7 @@
 #include "player.h"
 #include "score.h"
 #include "effect.h"
+#include "particle.h"
 
 //マクロ定義
 #define MAX_BULLET (128)//弾の最大数
@@ -53,8 +54,9 @@ void InitBullet(void)
 	{
 		g_aBullet[nCntBullet].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_aBullet[nCntBullet].move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_aBullet[nCntBullet].nLife = 50;
+		g_aBullet[nCntBullet].nLife = 0;
 		g_aBullet[nCntBullet].bUse = false;//使用していない状態にする
+		g_aBullet[nCntBullet].type = {};//使用していない状態にする
 
 	}
 
@@ -137,16 +139,7 @@ void UpdateBullet(void)
 		if (g_aBullet[nCntBullet].bUse == true)
 		{//弾が使用されている
 
-				//頂点バッファをロックし、頂点データへのポインタを取得
-				g_pVtxBuffBullet->Lock(0, 0, (void**)&pVtx, 0);
-
-				//g_aBullet[nCntBullet].move.x += 0.3f;
-				g_aBullet[nCntBullet].pos.x += g_aBullet[nCntBullet].move.x;
-				g_aBullet[nCntBullet].pos.y += g_aBullet[nCntBullet].move.y;
-				g_aBullet[nCntBullet].pos.z += g_aBullet[nCntBullet].move.z;
-
-				SetEffect(g_aBullet[nCntBullet].pos, D3DXVECTOR3(1.0f, 1.0f, 1.0f), 0, 10);
-
+				//SetEffect(g_aBullet[nCntBullet].pos, D3DXCOLOR(1.0f, 1.0f, 1.0f,1.0f), 30.0f, 10, D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 				Enemy* pEnemy;//敵の情報へのポインタ
 				Player* pPlayer;
 				int nCntEnemy;
@@ -157,6 +150,49 @@ void UpdateBullet(void)
 
 				pPlayer = GetPlayer();
 
+				//頂点バッファをロックし、頂点データへのポインタを取得
+				g_pVtxBuffBullet->Lock(0, 0, (void**)&pVtx, 0);
+
+				//g_aBullet[nCntBullet].move.x += 0.3f;
+				//位置の更新
+				g_aBullet[nCntBullet].pos.x += g_aBullet[nCntBullet].move.x;
+				g_aBullet[nCntBullet].pos.y += g_aBullet[nCntBullet].move.y;
+				g_aBullet[nCntBullet].pos.z += g_aBullet[nCntBullet].move.z;
+
+				if (g_aBullet[nCntBullet].type == BULLETTYPE_HOMING)
+				{
+					float fRotMove, fRotDest, fRotDiff;
+
+					fRotMove = atan2f(g_aBullet[nCntBullet].pos.x, g_aBullet[nCntBullet].pos.y);//現在の移動方向(角度)
+					fRotDest = atan2f(pPlayer->pos.x- g_aBullet[nCntBullet].pos.x,pPlayer->pos.y- g_aBullet[nCntBullet].pos.y);//目標の移動方向(角度)
+					fRotDiff = fRotDest - fRotMove;//目標の移動方向までの差分
+
+					if ((fRotMove - fRotDest) <= -3.14)
+					{
+						fRotDiff += 6.28f;
+					}
+					else if ((fRotDest-fRotMove) >= 3.14)
+					{
+						fRotDiff -= 6.28f;
+					}
+
+
+					fRotMove += fRotDiff * 0.5f;//移動方向(角度)の補正
+
+					if ((fRotMove - fRotDest) <= -3.14)
+					{
+						fRotDiff += 6.28f;
+					}
+					else if ((fRotDest - fRotMove) >= 3.14)
+					{
+						fRotDiff -= 6.28f;
+					}
+
+					g_aBullet[nCntBullet].move.x = sinf(fRotMove) * 5.0f;
+					g_aBullet[nCntBullet].move.y = cosf(fRotMove) * 5.0f;
+
+				}
+
 				pVtx += 4 * nCntBullet;
 
 				pVtx[0].pos = D3DXVECTOR3(g_aBullet[nCntBullet].pos.x - (WIDTHBULLET / 2), g_aBullet[nCntBullet].pos.y - (HEIGHTBULLET / 2), g_aBullet[nCntBullet].pos.z);
@@ -165,37 +201,27 @@ void UpdateBullet(void)
 				pVtx[3].pos = D3DXVECTOR3(g_aBullet[nCntBullet].pos.x + (WIDTHBULLET / 2), g_aBullet[nCntBullet].pos.y + (HEIGHTBULLET / 2), g_aBullet[nCntBullet].pos.z);
 
 
-
 				g_aBullet[nCntBullet].nLife--;
-
-				if (0 >= g_aBullet[nCntBullet].pos.x >= SCREEN_WIDTH || 0 >= g_aBullet[nCntBullet].pos.y >= SCREEN_HEIGHT)
-				{
-					g_aBullet[nCntBullet].bUse = false;//使用していない状態にする
-					SetExplosion(g_aBullet[nCntBullet].pos, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-				}
-
-				if (g_aBullet[nCntBullet].nLife == 0)
-				{
-					g_aBullet[nCntBullet].bUse = false;//使用していない状態にする
-					SetExplosion(g_aBullet[nCntBullet].pos, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-				}
 
 				if (g_aBullet[nCntBullet].type == BULLETTYPE_PLAYER)
 				{//プレイヤーの弾
+
 					for (nCntEnemy = 0; nCntEnemy < MAX_ENEMY; nCntEnemy++, pEnemy++)
 					{
 						if (pEnemy->bUse == true)
 						{//敵が使用されている
 							if (g_aBullet[nCntBullet].pos.x >= pEnemy->pos.x - WIDTHENEMY / 2 && g_aBullet[nCntBullet].pos.x <= pEnemy->pos.x + WIDTHENEMY / 2 && g_aBullet[nCntBullet].pos.y >= pEnemy->pos.y - HEIGHTENEMY / 2 && g_aBullet[nCntBullet].pos.y <= pEnemy->pos.y + HEIGHTENEMY / 2)
 							{
-								HitEnemy(nCntEnemy, 50);
-								AddScore(10);
+								if (pEnemy->state != ENEMYSTATE_DIE)
+								{
+									HitEnemy(nCntEnemy, 50);
+								}
 								g_aBullet[nCntBullet].bUse = false;//弾を使用してない状態にする
 							}
 						}
 					}
 				}
-				else if (g_aBullet[nCntBullet].type == BULLETTYPE_ENEMY)
+				else if (g_aBullet[nCntBullet].type == BULLETTYPE_ENEMY|| g_aBullet[nCntBullet].type == BULLETTYPE_HOMING)
 				{//敵の弾
 						if (pPlayer->bUse == true)
 						{//プレイヤーが使用されている
@@ -207,6 +233,18 @@ void UpdateBullet(void)
 							}
 						}
 				}
+
+				if (0 >= g_aBullet[nCntBullet].pos.x >= SCREEN_WIDTH || 0 >= g_aBullet[nCntBullet].pos.y >= SCREEN_HEIGHT)
+				{
+					g_aBullet[nCntBullet].bUse = false;//使用していない状態にする
+					SetExplosion(g_aBullet[nCntBullet].pos, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+				}
+				else if (g_aBullet[nCntBullet].nLife <= 0)
+				{
+					g_aBullet[nCntBullet].bUse = false;//使用していない状態にする
+					SetExplosion(g_aBullet[nCntBullet].pos, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+				}
+
 
 				g_pVtxBuffBullet->Unlock();
 
@@ -261,7 +299,7 @@ void SetBullet(D3DXVECTOR3 pos, D3DXVECTOR3 move, int nLife, BULLETTYPE type)
 		{//弾が使用されていない
 			g_aBullet[nCntBullet].pos = pos;
 			g_aBullet[nCntBullet].move = move;
-			g_aBullet[nCntBullet].nLife = 100;
+			g_aBullet[nCntBullet].nLife = nLife;
 			g_aBullet[nCntBullet].bUse = true;//使用している状態にする
 			g_aBullet[nCntBullet].type = type;
 

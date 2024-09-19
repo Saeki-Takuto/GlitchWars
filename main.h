@@ -9,6 +9,7 @@
 #define _MAIN_H_					//2重インクルード防止のマクロ定義
 #include <windows.h>
 #include "d3dx9.h"
+#include "stdio.h"
 #define DIRECTINPUT_VERSION (0x0800)//ビルドの警告対処用マクロ
 #include "dinput.h"					//入力処理に必要
 #include "Xinput.h"//ジョイパッド処理に必要
@@ -27,9 +28,9 @@
 
 //マクロ定義
 #define CLASS_NAME "WindowClass"											//ウィンドウクラスの名前
-#define WINDOW_NAME "超絶ウルトラハイパーシューティングゴースティングエイジングケアゲーム"		//ウィンドウの名前(キャプションに表示)
-#define SCREEN_WIDTH (1280)													//ウィンドウの幅
-#define SCREEN_HEIGHT (720)													//ウィンドウの高さ
+#define WINDOW_NAME "Glitch Wars"		//ウィンドウの名前(キャプションに表示)
+#define SCREEN_WIDTH (1600)													//ウィンドウの幅
+#define SCREEN_HEIGHT (900)													//ウィンドウの高さ
 #define FVF_VERTEX_2D (D3DFVF_XYZRHW|D3DFVF_DIFFUSE|D3DFVF_TEX1)
 
 typedef enum
@@ -37,6 +38,8 @@ typedef enum
 	MODE_TITLE=0,//タイトル画面
 	MODE_GAME,//ゲーム画面
 	MODE_RESULT,//リザルト画面
+	MODE_BSOD,
+	MODE_RANKING,
 	MODE_MAX
 }MODE;
 
@@ -58,6 +61,7 @@ void Update(void);
 void Draw(void);
 void SetMode(MODE mode);
 MODE GetMode(void);
+void DrawDEBUG(float Playerposx,float Playerposy,float Playerposz);
 
 #endif
 

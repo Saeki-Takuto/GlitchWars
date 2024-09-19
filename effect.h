@@ -24,12 +24,12 @@ void InitEffect(void);
 void UninitEffect(void);
 void UpdateEffect(void);
 void DrawEffect(void);
-void SetEffect(D3DXVECTOR3 pos, D3DXVECTOR3 col, float fRadius, int nLife);
+void SetEffect(D3DXVECTOR3 pos, D3DXCOLOR col, float fRadius, int nLife,D3DXVECTOR3 move);
 
 
 
 //É}ÉNÉçíËã`
-#define WIDTHEFFECT (70)
-#define HEIGHTEFFECT (70)
+#define WIDTHEFFECT (1000)
+#define HEIGHTEFFECT (1000)
 
 #endif

@@ -53,6 +53,7 @@ void InitExplosion(void)
 		g_aExplosion[nCntExplosion].nCounterAnim = 0;
 		g_aExplosion[nCntExplosion].nPatternAnim = 0;
 		g_aExplosion[nCntExplosion].col = D3DXCOLOR(0.0f, 0.0f, 0.0f,0.0f);
+		g_aExplosion[nCntExplosion].nLife = 0;
 		g_aExplosion[nCntExplosion].bUse = false;//使用していない状態にする
 
 	}
@@ -138,22 +139,24 @@ void UpdateExplosion(void)
 		if (g_aExplosion[nCntExplosion].bUse == true)
 		{//爆発が使用されている
 
-
 			if (g_aExplosion[nCntExplosion].nCounterAnim %SPEEDEX==0)
 			{
 				g_aExplosion[nCntExplosion].nCounterAnim=0;
-				g_aExplosion[nCntExplosion].nPatternAnim++;
+				//g_aExplosion[nCntExplosion].nPatternAnim++;
+
+				g_aExplosion[nCntExplosion].nPatternAnim = (g_aExplosion[nCntExplosion].nPatternAnim + 1) % 10;
 
 				pVtx[0].tex = D3DXVECTOR2(0.0f + g_aExplosion[nCntExplosion].nPatternAnim * 0.125, 0.0f);
 				pVtx[1].tex = D3DXVECTOR2(0.125f + g_aExplosion[nCntExplosion].nPatternAnim * 0.125, 0.0f);
 				pVtx[2].tex = D3DXVECTOR2(0.0f + g_aExplosion[nCntExplosion].nPatternAnim * 0.125, 1.0f);
 				pVtx[3].tex = D3DXVECTOR2(0.125f + g_aExplosion[nCntExplosion].nPatternAnim * 0.125, 1.0f);
 
-			}
-			if (g_aExplosion[nCntExplosion].nPatternAnim >= FLAMEEX)
-			{
-				g_aExplosion[nCntExplosion].bUse = false;
-				g_aExplosion[nCntExplosion].nPatternAnim = 0;
+				if (g_aExplosion[nCntExplosion].nPatternAnim >= FLAMEEX)
+				{
+					g_aExplosion[nCntExplosion].bUse = false;
+					g_aExplosion[nCntExplosion].nPatternAnim++;
+				}
+
 			}
 		}
 		pVtx += 4;
@@ -178,14 +181,15 @@ void DrawExplosion(void)
 	//頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_2D);
 
+	//テクスチャの設定
+	pDevice->SetTexture(0, g_pTextureExplosion);
+
 
 	for (nCntExplosion = 0; nCntExplosion < MAX_EXPLOSION; nCntExplosion++)
 	{
 		if (g_aExplosion[nCntExplosion].bUse == true)
 		{//爆発が使用されている
 			//ポリゴンの描画
-			//テクスチャの設定
-			pDevice->SetTexture(0, g_pTextureExplosion);
 
 			pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP,
 				4*nCntExplosion,//頂点インデックス
@@ -211,14 +215,18 @@ void SetExplosion(D3DXVECTOR3 pos, D3DXCOLOR col)
 			g_aExplosion[nCntExplosion].pos = pos;
 			g_aExplosion[nCntExplosion].col = col;
 			g_aExplosion[nCntExplosion].bUse = true;//使用している状態にする
-			g_aExplosion[nCntExplosion].nCounterAnim = 0;
-			g_aExplosion[nCntExplosion].nPatternAnim = 0;
+			//g_aExplosion[nCntExplosion].nCounterAnim = 0;
+			//g_aExplosion[nCntExplosion].nPatternAnim = 0;
+			//g_aExplosion[nCntExplosion].nLife = 0;
+
 
 			//頂点バッファをロックし、頂点データへのポインタを取得
 			pVtx[0].pos = D3DXVECTOR3(g_aExplosion[nCntExplosion].pos.x - (WIDTHEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.y - (HEIGHTEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.z);
 			pVtx[1].pos = D3DXVECTOR3(g_aExplosion[nCntExplosion].pos.x + (WIDTHEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.y - (HEIGHTEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.z);
 			pVtx[2].pos = D3DXVECTOR3(g_aExplosion[nCntExplosion].pos.x - (WIDTHEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.y + (HEIGHTEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.z);
 			pVtx[3].pos = D3DXVECTOR3(g_aExplosion[nCntExplosion].pos.x + (WIDTHEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.y + (HEIGHTEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.z);
+
+
 			break;
 		}
 		pVtx += 4;
