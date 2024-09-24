@@ -1,6 +1,6 @@
 //==================================================================
 //
-//キャラクターをキー入力で操作できるようにしよう
+//GlitchWars
 //Author:Saeki Takuto
 //
 //==================================================================
@@ -19,6 +19,7 @@
 #include "sound.h"
 #include "ranking.h"
 #include "Bsod.h"
+#include "tutorial.h"
 
 //グローバル変数宣言
 LPDIRECT3D9 g_pD3D = NULL;				//Direct3Dオブジェクトへのポインタ
@@ -294,6 +295,9 @@ void Uninit(void)
 	//リザルト画面の終了処理
 	UninitResult();
 
+	//ランキングの終了処理
+	UninitRanking();
+
 	//サウンドの終了処理
 	UninitSound();
 
@@ -348,8 +352,11 @@ void Update(void)
 	case MODE_RANKING://ランキング
 		UpdateRanking();
 		break;
-	case MODE_BSOD:
+	case MODE_BSOD://ブルースクリーン
 		UpdateBsod();
+		break;
+	case MODE_TUTORIAL://チュートリアル
+		UpdateTutorial();
 		break;
 	}
 
@@ -384,8 +391,11 @@ void Draw(void)
 		case MODE_RANKING://ランキング画面
 			DrawRanking();
 			break;
-		case MODE_BSOD:
+		case MODE_BSOD://ブルースクリーン
 			DrawBsod();
+			break;
+		case MODE_TUTORIAL://チュートリアル
+			DrawTutorial();
 			break;
 		}
 
@@ -399,9 +409,6 @@ void Draw(void)
 		int nCntPlayer;
 
 		pPlayer = GetPlayer();
-
-		//デバッグの表示
-		DrawDEBUG(pPlayer->pos.x, pPlayer->pos.y, pPlayer->pos.z);
 
 #endif
 
@@ -431,8 +438,11 @@ void SetMode(MODE mode)
 	case MODE_RANKING://ランキング画面
 		UninitRanking();
 		break;
-	case MODE_BSOD:
+	case MODE_BSOD://ブルースクリーン
 		UninitBsod();
+		break;
+	case MODE_TUTORIAL://チュートリアル
+		UninitTutorial();
 		break;
 	}
 
@@ -451,8 +461,11 @@ void SetMode(MODE mode)
 	case MODE_RANKING://ランキング画面
 		InitRanking();
 		break;
-	case MODE_BSOD:
+	case MODE_BSOD://ブルースクリーン
 		InitBsod();
+		break;
+	case MODE_TUTORIAL://チュートリアル
+		InitTutorial();
 		break;
 	}
 

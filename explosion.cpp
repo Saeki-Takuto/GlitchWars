@@ -1,6 +1,6 @@
 //==================================================================
 //
-//キャラクターをキー入力で操作できるようにしよう
+//GlitchWars
 //Author:Saeki Takuto
 //
 //==================================================================
@@ -14,7 +14,6 @@
 
 //マクロ定義
 #define MAX_EXPLOSION (128)//爆発の最大数
-#define MAX_SPEED (5)
 
 //爆発構造体の定義
 typedef struct
@@ -156,14 +155,12 @@ void UpdateExplosion(void)
 					g_aExplosion[nCntExplosion].bUse = false;
 					g_aExplosion[nCntExplosion].nPatternAnim++;
 				}
-
 			}
 		}
 		pVtx += 4;
 	}
 	//頂点バッファをアンロックする
 	g_pVtxBuffExplosion->Unlock();
-
 }
 
 //爆発の描画処理
@@ -215,17 +212,12 @@ void SetExplosion(D3DXVECTOR3 pos, D3DXCOLOR col)
 			g_aExplosion[nCntExplosion].pos = pos;
 			g_aExplosion[nCntExplosion].col = col;
 			g_aExplosion[nCntExplosion].bUse = true;//使用している状態にする
-			//g_aExplosion[nCntExplosion].nCounterAnim = 0;
-			//g_aExplosion[nCntExplosion].nPatternAnim = 0;
-			//g_aExplosion[nCntExplosion].nLife = 0;
-
 
 			//頂点バッファをロックし、頂点データへのポインタを取得
 			pVtx[0].pos = D3DXVECTOR3(g_aExplosion[nCntExplosion].pos.x - (WIDTHEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.y - (HEIGHTEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.z);
 			pVtx[1].pos = D3DXVECTOR3(g_aExplosion[nCntExplosion].pos.x + (WIDTHEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.y - (HEIGHTEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.z);
 			pVtx[2].pos = D3DXVECTOR3(g_aExplosion[nCntExplosion].pos.x - (WIDTHEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.y + (HEIGHTEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.z);
 			pVtx[3].pos = D3DXVECTOR3(g_aExplosion[nCntExplosion].pos.x + (WIDTHEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.y + (HEIGHTEXPLOSION / 2), g_aExplosion[nCntExplosion].pos.z);
-
 
 			break;
 		}

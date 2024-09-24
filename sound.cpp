@@ -33,16 +33,20 @@ DWORD g_aSizeAudio[SOUND_LABEL_MAX] = {};					// オーディオデータサイズ
 // サウンドの情報
 SOUNDINFO g_aSoundInfo[SOUND_LABEL_MAX] =
 {
-	{"data/BGM/title002.wav", -1},       //BGM1
-	{"data/BGM/result001.wav", -1},       //BGM2
+	{"data/BGM/title002.wav", -1},      //BGM1
+	{"data/BGM/result001.wav", -1},     //BGM2
 	{"data/BGM/game000.wav", -1},       //BGM3
-	{"data/BGM/CLEAR.wav", -1},       //BGM4
-	{"data/BGM/GAMEOVER.wav", -1},       //BGM5
-
-	{"data/SE/Click.wav", 0},            //SE1
-	{"data/SE/Error.wav", 0},            //SE2
-	{"data/SE/Dong.wav", 0},            //SE2
-
+	{"data/BGM/CLEAR.wav", 0},			//BGM4
+	{"data/BGM/GAMEOVER.wav", 0},       //BGM5
+	{"data/BGM/tutorial.wav", 0},       //BGM6
+	{"data/SE/Click.wav", 0},           //SE1
+	{"data/SE/Error.wav", 0},           //SE2
+	{"data/SE/Dong.wav", 0},            //SE3
+	{"data/SE/PauseStart.wav", 0},      //SE4
+	{"data/SE/PauseEnd.wav", 0},        //SE5
+	{"data/SE/SelectUP.wav", 0},        //SE6
+	{"data/SE/SelectDown.wav", 0},      //SE7
+	{"data/SE/Boot.wav", 0},      //SE8
 
 };
 

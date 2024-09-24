@@ -9,7 +9,6 @@ void UninitParticle(void);
 void UpdateParticle(void);
 void DrawParticle(void);
 
-void SetParticle(D3DXVECTOR3 pos,int nLife);
-
+void SetParticle(D3DXVECTOR3 pos, int nLife, int nNumber);
 
 #endif

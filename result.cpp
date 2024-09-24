@@ -1,3 +1,10 @@
+//==================================================================
+//
+//GlitchWars
+//Author:Saeki Takuto
+//
+//==================================================================
+
 #include "result.h"
 #include "input.h"
 #include "fade.h"
@@ -84,7 +91,7 @@ void InitResult(void)
 //タイトル画面の終了処理
 void UninitResult(void)
 {
-	for (int nCnt = 0; nCnt > RESULT_MAX; nCnt++)
+	for (int nCnt = 0; nCnt < RESULT_MAX; nCnt++)
 	{
 		//テクスチャの破棄
 		if (g_pTextureResult[nCnt] != NULL)

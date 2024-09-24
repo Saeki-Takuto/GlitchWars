@@ -1,3 +1,10 @@
+//==================================================================
+//
+//GlitchWars
+//Author:Saeki Takuto
+//
+//==================================================================
+
 #include "particle.h"
 #include "main.h"
 #include "effect.h" 
@@ -11,11 +18,11 @@ typedef struct
 	D3DXVECTOR3 pos;//位置(発生位置)
 	int nLife;//寿命(発生時間)
 	bool bUse;
+	int nNumber;//粒子の数
 }Particle;
 
 //グローバル変数
 Particle g_aParticle[MAX_PARTICLE];
-
 
 //初期化処理
 void InitParticle(void)
@@ -34,6 +41,7 @@ void InitParticle(void)
 		g_aParticle[nCntParticle].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_aParticle[nCntParticle].nLife=0;
 		g_aParticle[nCntParticle].bUse = false;
+		g_aParticle[nCntParticle].nNumber = 0;
 	}
 }
 
@@ -57,7 +65,7 @@ void UpdateParticle(void)
 		if (g_aParticle[nCntParticle].bUse == true)
 		{
 			//パーティクル生成
-			for (nCntApper = 0; nCntApper < 10; nCntApper++)//発生させたい粒子の数
+			for (nCntApper = 0; nCntApper < g_aParticle[nCntParticle].nNumber; nCntApper++)//発生させたい粒子の数
 			{
 				pos = g_aParticle[nCntParticle].pos;
 
@@ -87,13 +95,15 @@ void UpdateParticle(void)
 				g_aParticle[nCntParticle].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 				g_aParticle[nCntParticle].nLife = 0;
 				g_aParticle[nCntParticle].bUse = false;
+				g_aParticle[nCntParticle].nNumber = 0;
+
 			}
 		}
 	}
 }
 
 //設定処理
-void SetParticle(D3DXVECTOR3 pos, int nLife)
+void SetParticle(D3DXVECTOR3 pos, int nLife,int nNumber)
 {
 	VERTEX_2D* pVtx;
 
@@ -106,6 +116,8 @@ void SetParticle(D3DXVECTOR3 pos, int nLife)
 			g_aParticle[nCntParticle].pos = pos;
 			g_aParticle[nCntParticle].nLife = nLife;
 			g_aParticle[nCntParticle].bUse = true;
+			g_aParticle[nCntParticle].nNumber = nNumber;
+
 			break;
 		}
 	}

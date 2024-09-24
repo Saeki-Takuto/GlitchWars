@@ -40,6 +40,7 @@ typedef enum
 	MODE_RESULT,//ƒŠƒUƒ‹ƒg‰æ–Ê
 	MODE_BSOD,
 	MODE_RANKING,
+	MODE_TUTORIAL,
 	MODE_MAX
 }MODE;
 

@@ -7,5 +7,7 @@
 void InitWave(void);
 void UninitWave(void);
 void UpdateWave(void);
+void HitWave(int nNum);
+int GetWave(void);
 
 #endif

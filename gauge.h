@@ -2,6 +2,8 @@
 #define _GAUGE_H_//2重インクルード防止のマクロ定義
 
 #include "main.h"
+
+#define MAX_UI (2)
 //プロトタイプ宣言
 void InitGauge(void);
 void UninitGauge(void);

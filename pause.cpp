@@ -1,6 +1,6 @@
 //==================================================================
 //
-//キャラクターをキー入力で操作できるようにしよう
+//GlitchWars
 //Author:Saeki Takuto
 //
 //==================================================================
@@ -66,10 +66,10 @@ void InitPause(void)
 	for (nCntPause = 0; nCntPause < NUM_PA; nCntPause++)
 	{
 		//頂点座標の設定
-		pVtx[0].pos = D3DXVECTOR3(000.0f, 000.0+(100*nCntPause), 0.0f);
-		pVtx[1].pos = D3DXVECTOR3(300.0f, 0.0 + (100 * nCntPause), 0.0f);
-		pVtx[2].pos = D3DXVECTOR3(0.0f, 100.0 + (100 * nCntPause), 0.0f);
-		pVtx[3].pos = D3DXVECTOR3(300.0f, 100.0 + (100 * nCntPause), 0.0f);
+		pVtx[0].pos = D3DXVECTOR3(SCREEN_WIDTH - 1050.0f, 250.0f+(150*nCntPause), 0.0f);
+		pVtx[1].pos = D3DXVECTOR3(SCREEN_WIDTH - 550.0f, 250.0f + (150 * nCntPause), 0.0f);
+		pVtx[2].pos = D3DXVECTOR3(SCREEN_WIDTH - 1050.0f, 350.0f + (150 * nCntPause), 0.0f);
+		pVtx[3].pos = D3DXVECTOR3(SCREEN_WIDTH - 550.0f, 350.0f + (150 * nCntPause), 0.0f);
 
 		//rhwの設定
 		pVtx[0].rhw = 1.0f;
@@ -118,7 +118,6 @@ void UninitPause(void)
 		g_pVtxBuffPause->Release();
 		g_pVtxBuffPause = NULL;
 	}
-
 }
 
 void UpdatePause(void)
@@ -126,22 +125,23 @@ void UpdatePause(void)
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 	int nCntPause;
 
-	if (KeyboardTrigger(DIK_DOWN) == true)
+	if (KeyboardTrigger(DIK_DOWN) == true|| JoypadTrigger(JOYKEY_DOWN)==true)
 	{//下が押された
 		PauseSelect++;
 		if (PauseSelect >= PAUSE_MENU_MAX)
 		{
 			PauseSelect = 0;
 		}
+		PlaySound(SOUND_LABEL_SE07);
 	}
-	else if (KeyboardTrigger(DIK_UP) == true)
+	else if (KeyboardTrigger(DIK_UP) == true || JoypadTrigger(JOYKEY_UP)==true)
 	{//上が押された
 		PauseSelect--;
 		if (PauseSelect < 0)
 		{
 			PauseSelect = PAUSE_MENU_MAX-1;
-
 		}
+		PlaySound(SOUND_LABEL_SE06);
 	}
 
 	//頂点バッファをロックし、頂点情報へのポインタを取得
@@ -170,7 +170,7 @@ void UpdatePause(void)
 	g_pVtxBuffPause->Unlock();
 
 
-	if (KeyboardTrigger(DIK_RETURN) == true)
+	if (KeyboardTrigger(DIK_RETURN) == true || JoypadTrigger(JOYKEY_A) == true)
 	{
 		switch (PauseSelect)
 		{
@@ -185,7 +185,6 @@ void UpdatePause(void)
 			break;
 		}
 	}
-
 }
 
 void DrawPause(void)
@@ -204,7 +203,6 @@ void DrawPause(void)
 
 	for (nCntPA = 0; nCntPA < NUM_PA; nCntPA++)
 	{
-
 		if (g_apTexturePause[nCntPA] != NULL)
 		{
 			//テクスチャの設定
@@ -213,7 +211,5 @@ void DrawPause(void)
 			//プレイヤーの描画
 			pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, nCntPA * 4, 2);
 		}
-
 	}
-
 }

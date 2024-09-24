@@ -1,12 +1,13 @@
 //==================================================================
 //
-//キャラクターをキー入力で操作できるようにしよう
+//GlitchWars
 //Author:Saeki Takuto
 //
 //==================================================================
 
 #include "main.h"
 #include "back.h"
+#include "wave.h"
 
 //マクロ定義
 #define NUM_BG (2)//背景の数
@@ -134,7 +135,7 @@ void UpdateBack(void)
 
 	for (nCntBG = 0; nCntBG < NUM_BG; nCntBG++)
 	{
-		g_aPosTexU[nCntBG] += 0.001f*(nCntBG);
+		g_aPosTexU[nCntBG] += 0.0001f * (nCntBG)*GetWave();
 
 		//テクスチャ座標の設定
 		pVtx[0].tex = D3DXVECTOR2(g_aPosTexU[nCntBG], 0.0f);
@@ -143,12 +144,10 @@ void UpdateBack(void)
 		pVtx[3].tex = D3DXVECTOR2(g_aPosTexU[nCntBG] + 1.0f, 1.0f);
 
 		pVtx += 4;
-
 	}
 
 	//頂点バッファをアンロックする
 	g_pVtxBuffBack->Unlock();
-
 }
 
 //プレイヤーの描画処理
@@ -177,8 +176,6 @@ void DrawBack(void)
 			//プレイヤーの描画
 			pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, nCntBG*4, 2);
 		}
-
 	}
-
 }
 

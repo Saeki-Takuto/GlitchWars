@@ -1,3 +1,10 @@
+//==================================================================
+//
+//GlitchWars
+//Author:Saeki Takuto
+//
+//==================================================================
+
 #include "ranking.h"
 #include "rankingscore.h"
 #include "rankset.h"

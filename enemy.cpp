@@ -1,6 +1,6 @@
 //==================================================================
 //
-//キャラクターをキー入力で操作できるようにしよう
+//GlitchWars
 //Author:Saeki Takuto
 //
 //==================================================================
@@ -12,6 +12,7 @@
 #include "explosion.h"
 #include "particle.h"
 #include "score.h"
+#include "player.h"
 
 //グローバル変数
 LPDIRECT3DTEXTURE9 g_pTextureEnemy[NUM_ENEMY] = {};
@@ -30,7 +31,6 @@ void InitEnemy(void)
 
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
-
 	//テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
 		"data/TEXTURE/enemy000.jpg",
@@ -38,38 +38,44 @@ void InitEnemy(void)
 
 	//テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
-		"data/TEXTURE/Tex2.png",
+		"data/TEXTURE/tutorial001.png",
 		&g_pTextureEnemy[1]);
 
 	//テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
-		"data/TEXTURE/rock.png",
+		"data/TEXTURE/tutorial002.png",
 		&g_pTextureEnemy[2]);
 
+	//テクスチャの読み込み
+	D3DXCreateTextureFromFile(pDevice,
+		"data/TEXTURE/tutorial003.png",
+		&g_pTextureEnemy[3]);
 
-
-
+	//テクスチャの読み込み
+	D3DXCreateTextureFromFile(pDevice,
+		"data/TEXTURE/tutorial004.png",
+		&g_pTextureEnemy[4]);
 
 	for (nCntENEMY = 0; nCntENEMY < MAX_ENEMY; nCntENEMY++)
 	{
 
-		g_aEnemy[nCntENEMY].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		g_aEnemy[nCntENEMY].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//位置の初期化
 
 		g_aEnemy[nCntENEMY].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//向きを初期化する
 
-		g_aEnemy[nCntENEMY].nCntBull = 0;
+		g_aEnemy[nCntENEMY].nCntBull = 0;						//弾のカウントの初期化
 
-		g_aEnemy[nCntENEMY].nLife = 500;
+		g_aEnemy[nCntENEMY].nLife = 500;						//ライフを500に
 
-		g_aEnemy[nCntENEMY].bUse = false;
+		g_aEnemy[nCntENEMY].bUse = false;						//不使用にする
 
-		g_aEnemy[nCntENEMY].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+		g_aEnemy[nCntENEMY].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f); //カラーの初期化
 
-		g_aEnemy[nCntENEMY].nType = 0;
+		g_aEnemy[nCntENEMY].nType = 0;								//タイプの初期化
 
-		g_aEnemy[nCntENEMY].state = {};
+		g_aEnemy[nCntENEMY].state = {};								//ステートの初期化
 
-		int nCounterState = 0;
+		int nCounterState = 0;										//ステートカウントの初期化
 
 		g_nNumEnemy = 0;
 	}
@@ -185,6 +191,9 @@ void UpdateEnemy(void)
 	int nCntEnemy;
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
+	Player* pPlayer;
+
+	pPlayer = GetPlayer();
 
 	for (nCntEnemy = 0; nCntEnemy < MAX_ENEMY; nCntEnemy++)
 	{	
@@ -200,11 +209,15 @@ void UpdateEnemy(void)
 				g_aEnemy[nCntEnemy].col.b = 1.0f;
 				g_aEnemy[nCntEnemy].col.a = 1.0f;
 
-				if (g_aEnemy[nCntEnemy].nCntBull >= 60)
-				{//SPACE
-					//弾の設定
-					SetBullet(g_aEnemy[nCntEnemy].pos, D3DXVECTOR3(5.0f, 0.0f, 0.0f), 50, BULLETTYPE_ENEMY);
-					g_aEnemy[nCntEnemy].nCntBull = 0;
+				if (g_aEnemy[nCntEnemy].nCntBull >= 100)
+				{
+						//弾の発射方向を計算
+						D3DXVECTOR3 direction = pPlayer->pos - g_aEnemy[nCntEnemy].pos;
+						D3DXVec3Normalize(&direction, &direction);
+
+						// 弾の設定
+						SetBullet(g_aEnemy[nCntEnemy].pos, direction * 5.0f, 100, BULLETTYPE_ENEMY);
+						g_aEnemy[nCntEnemy].nCntBull = 0;
 				}
 				break;
 			case ENEMYSTATE_DAMAGE:
@@ -223,8 +236,9 @@ void UpdateEnemy(void)
 				{
 					g_aEnemy[nCntEnemy].col.a = 0.0f;
 					g_aEnemy[nCntEnemy].bUse = false;
+					g_aEnemy[nCntEnemy].nCntBull = 0;
 					g_nNumEnemy--;//敵の総数カウントダウン
-					SetParticle(g_aEnemy[nCntEnemy].pos, 30);
+					SetParticle(g_aEnemy[nCntEnemy].pos, 30,10);
 					g_aEnemy[nCntEnemy].state = ENEMYSTATE_NORMAL;
 				}
 				break;
@@ -263,11 +277,23 @@ void SetEnemy(D3DXVECTOR3 pos, int nType,int nLife)
 			g_aEnemy[nCntEnemy].nType = nType; // 敵の種類を設定
 			g_aEnemy[nCntEnemy].state = ENEMYSTATE_NORMAL;
 
-			//頂点バッファをロックし、頂点データへのポインタを取得
-			pVtx[0].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x - (WIDTHENEMY / 2), g_aEnemy[nCntEnemy].pos.y - (HEIGHTENEMY / 2), g_aEnemy[nCntEnemy].pos.z);
-			pVtx[1].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x + (WIDTHENEMY / 2), g_aEnemy[nCntEnemy].pos.y - (HEIGHTENEMY / 2), g_aEnemy[nCntEnemy].pos.z);
-			pVtx[2].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x - (WIDTHENEMY / 2), g_aEnemy[nCntEnemy].pos.y + (HEIGHTENEMY / 2), g_aEnemy[nCntEnemy].pos.z);
-			pVtx[3].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x + (WIDTHENEMY / 2), g_aEnemy[nCntEnemy].pos.y + (HEIGHTENEMY / 2), g_aEnemy[nCntEnemy].pos.z);
+			if (g_aEnemy[nCntEnemy].nType < 1)
+			{
+				//頂点バッファをロックし、頂点データへのポインタを取得
+				pVtx[0].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x - (WIDTHENEMY / 2), g_aEnemy[nCntEnemy].pos.y - (HEIGHTENEMY / 2), g_aEnemy[nCntEnemy].pos.z);
+				pVtx[1].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x + (WIDTHENEMY / 2), g_aEnemy[nCntEnemy].pos.y - (HEIGHTENEMY / 2), g_aEnemy[nCntEnemy].pos.z);
+				pVtx[2].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x - (WIDTHENEMY / 2), g_aEnemy[nCntEnemy].pos.y + (HEIGHTENEMY / 2), g_aEnemy[nCntEnemy].pos.z);
+				pVtx[3].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x + (WIDTHENEMY / 2), g_aEnemy[nCntEnemy].pos.y + (HEIGHTENEMY / 2), g_aEnemy[nCntEnemy].pos.z);
+			}
+			else
+			{
+				//頂点バッファをロックし、頂点データへのポインタを取得
+				pVtx[0].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x - (WIDTHENEMY), g_aEnemy[nCntEnemy].pos.y - (HEIGHTENEMY), g_aEnemy[nCntEnemy].pos.z);
+				pVtx[1].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x + (WIDTHENEMY), g_aEnemy[nCntEnemy].pos.y - (HEIGHTENEMY), g_aEnemy[nCntEnemy].pos.z);
+				pVtx[2].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x - (WIDTHENEMY), g_aEnemy[nCntEnemy].pos.y + (HEIGHTENEMY), g_aEnemy[nCntEnemy].pos.z);
+				pVtx[3].pos = D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x + (WIDTHENEMY), g_aEnemy[nCntEnemy].pos.y + (HEIGHTENEMY), g_aEnemy[nCntEnemy].pos.z);
+
+			}
 
 			g_nNumEnemy++;//敵の総数カウントアップ
 			break;
@@ -298,23 +324,11 @@ void HitEnemy(int nCntEnemy, int nDamage)
 		}
 		else
 		{
-			//g_pVtxBuffEnemy->Lock(0, 0, (void**)&pVtx, 0);
-
 			g_aEnemy[nCntEnemy].state = ENEMYSTATE_DAMAGE;
 			g_aEnemy[nCntEnemy].nCounterState = 5;
 			g_aEnemy[nCntEnemy].col.r = 1.0f;
 			g_aEnemy[nCntEnemy].col.g = 0.0f;
 			g_aEnemy[nCntEnemy].col.b = 0.0f;
-
-			//pVtx += 4 * nCntEnemy;
-			////頂点カラーの設定
-			//pVtx[0].col = D3DCOLOR_RGBA(255, 0, 0, 255);
-			//pVtx[1].col = D3DCOLOR_RGBA(255, 0, 0, 255);
-			//pVtx[2].col = D3DCOLOR_RGBA(255, 0, 0, 255);
-			//pVtx[3].col = D3DCOLOR_RGBA(255, 0, 0, 255);
-
-			//g_pVtxBuffEnemy->Unlock();
-
 		}
 }
 

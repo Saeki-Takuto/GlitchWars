@@ -1,11 +1,8 @@
-﻿  wave.cpp
-C:\Users\student\source\repos\20240709_2DGame\wave.cpp(59,32): warning C4244: '引数': 'int' から 'FLOAT' への変換です。データが失われる可能性があります。
-C:\Users\student\source\repos\20240709_2DGame\wave.cpp(59,25): warning C4244: '引数': 'int' から 'FLOAT' への変換です。データが失われる可能性があります。
-C:\Users\student\source\repos\20240709_2DGame\wave.cpp(25,15): warning C4101: 'nEneTAIRYOKU': ローカル変数は 1 度も使われていません。
-C:\Users\student\source\repos\20240709_2DGame\wave.cpp(25,6): warning C4101: 'nEneKAZU': ローカル変数は 1 度も使われていません。
+﻿  back.cpp
+C:\Users\student\source\repos\20240709_2DGame\back.cpp(105,13): warning C4101: 'pVtx': ローカル変数は 1 度も使われていません。
   コード生成しています。
-  2 of 166 functions ( 1.2%) were compiled, the rest were copied from previous compilation.
+  0 of 181 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    2 functions had inline decision re-evaluated but remain unchanged
+    0 functions had inline decision re-evaluated but remain unchanged
   コード生成が終了しました。
   20240709_2DGame.vcxproj -> C:\Users\student\source\repos\20240709_2DGame\20240709_2DGame.exe

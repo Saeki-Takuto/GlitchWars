@@ -11,7 +11,7 @@
 
 //ƒ}ƒNƒ’è‹`
 #define MAX_ENEMY (128)
-#define NUM_ENEMY (3)//“G‚Ìí—Ş
+#define NUM_ENEMY (5)//“G‚Ìí—Ş
 #define WIDTHENEMY (150)
 #define HEIGHTENEMY (150)
 

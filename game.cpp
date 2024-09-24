@@ -1,3 +1,10 @@
+//==================================================================
+//
+//GlitchWars
+//Author:Saeki Takuto
+//
+//==================================================================
+
 #include "player.h"
 #include "back.h"
 #include "input.h"
@@ -15,6 +22,8 @@
 #include "time.h"
 #include "wave.h"
 #include "memory.h"
+#include "gauge.h"
+#include "ui.h"
 
 //グローバル変数宣言
 GAMESTATE g_gameState = GAMESTATE_NONE;//ゲームの状態
@@ -36,6 +45,7 @@ void InitGame(void)
 	//プレイヤーの初期化処理
 	InitPlayer();
 
+	//パーティクルの初期化処理
 	InitParticle();
 
 	//敵の初期化処理
@@ -50,10 +60,17 @@ void InitGame(void)
 	//タイムの初期化処理
 	InitTime();
 
+	//メモリ使用量の初期化処理
 	InitMemory();
 
 	//ウェーブの初期化処理
 	InitWave();
+
+	//ゲージの初期化処理
+	InitGauge();
+
+	//UIの初期化処理
+	InitUi();
 
 	//ポーズの初期化処理
 	InitPause();
@@ -71,6 +88,12 @@ void UninitGame(void)
 {
 	//ポーズの終了処理
 	UninitPause();
+
+	//UIの終了処理
+	UninitUi();
+
+	//ゲージの初期化処理
+	UninitGauge();
 
 	//爆発の終了処理
 	UninitExplosion();
@@ -96,11 +119,13 @@ void UninitGame(void)
 	//タイムの終了処理
 	UninitTime();
 
+	//メモリ使用量の初期化処理
 	UninitMemory();
 
 	//ウェーブの終了処理
 	UninitWave();
 
+	//音楽の停止
 	StopSound();
 }
 
@@ -110,8 +135,20 @@ void UpdateGame(void)
 	int nNum;
 	int nNum2;
 	int nNum3;
-	if (KeyboardTrigger(DIK_P) == true)
+	if (KeyboardTrigger(DIK_P) == true|| JoypadTrigger(JOYKEY_START)==true)
 	{//ポーズキー(P)が押された
+
+		if (g_bPause == false)
+		{
+			//サウンドの設定
+			PlaySound(SOUND_LABEL_SE04);
+		}
+		else
+		{
+			//サウンドの設定
+			PlaySound(SOUND_LABEL_SE05);
+
+		}
 		g_bPause = g_bPause ? false : true;
 	}
 
@@ -122,7 +159,7 @@ void UpdateGame(void)
 
 	if (g_bPause == false)
 	{//ポーズ中でなければ
-			//背景の更新処理
+		//背景の更新処理
 		UpdateBack();
 
 		//弾の更新処理
@@ -130,6 +167,9 @@ void UpdateGame(void)
 
 		//エフェクトの更新処理
 		UpdateEffect();
+
+		//ゲージの更新処理
+		UpdateGauge();
 
 		//プレイヤーの更新処理
 		UpdatePlayer();
@@ -140,10 +180,8 @@ void UpdateGame(void)
 		//爆発の更新処理
 		UpdateExplosion();
 
+		//パーティクルの初期化処理
 		UpdateParticle();
-
-		////パーティクル
-		//SetParticle(D3DXVECTOR3(400.0f,150.0f,0.0f),20);
 
 		//スコアの更新処理
 		UpdateScore();
@@ -151,7 +189,11 @@ void UpdateGame(void)
 		//タイムの更新処理
 		UpdateTime();
 
+		//メモリ使用量の更新処理
 		UpdateMemory();
+
+		//UIの更新処理
+		UpdateUi();
 
 		//ウェーブの更新処理
 		UpdateWave();
@@ -206,9 +248,6 @@ void UpdateGame(void)
 			g_nCounterGameState++;
 			if (g_nCounterGameState >= 60)
 			{
-				////モード設定(リザルト画面に移行)
-				//SetFade(MODE_RESULT);
-
 				SetMode(MODE_BSOD);
 
 				ResetRanking();
@@ -218,16 +257,10 @@ void UpdateGame(void)
 
 				g_nCounterGameState = 0;
 				g_gameState = GAMESTATE_NONE;//何もしていない状態に設定
-
 			}
 			break;
-
 		}
-
-
 	}
-
-
 }
 
 //ゲーム画面の描画処理
@@ -257,11 +290,19 @@ void DrawGame(void)
 	//タイムの描画処理
 	DrawTime();
 
+	//メモリ使用量の描画処理
 	DrawMemory();
+
+	//ゲージの描画処理
+	DrawGauge();
+
+	//UIの描画処理
+	DrawUi();
 
 
 	if (g_bPause == true)
 	{
+		//ポーズの描画処理
 		DrawPause();
 	}
 }

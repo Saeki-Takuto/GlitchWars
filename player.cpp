@@ -1,6 +1,6 @@
 //==================================================================
 //
-//キャラクターをキー入力で操作できるようにしよう
+//GlitchWars
 //Author:Saeki Takuto
 //
 //==================================================================
@@ -15,6 +15,7 @@
 #include "effect.h"
 #include "fade.h"
 #include "particle.h"
+#include "wave.h"
 
 
 //グローバル変数
@@ -42,13 +43,13 @@ void InitPlayer(void)
 
 	g_CounterAnimPlayer=0;						//アニメーションカウンターを初期化
 	g_nPatternAnimPlayer=0;						//アニメーションパターンNo.を初期化
-	g_player.pos = D3DXVECTOR3(300.0f,300.0f,0.0f);		//位置を初期化
+	g_player.pos = D3DXVECTOR3(SCREEN_WIDTH/2,SCREEN_HEIGHT/2,0.0f);		//位置を初期化
 	g_player.move= D3DXVECTOR3(0.0f,0.0f,0.0f);			//移動量を初期化
 	g_Direction = 0.2;							//方向を初期化
 	g_player.rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//向きを初期化する
 	g_player.bDisp = true;//画面表示状態を初期化する
 	g_player.bUse = true;
-	g_player.nLife = 200;
+	g_player.nLife = 2000;
 	g_player.state = PLAYERSTATE_NORMAL;
 	g_player.nCounterState = 0;
 
@@ -234,41 +235,28 @@ void UpdatePlayer(void)
 		}
 	}
 
-	if (KeyboardRepeat(DIK_UP) == true|| JoypadRepeat(JOYKEY_L3))
-	{//UPキーが押された(拡大)
-		if (g_fLengthPlayer < 400)
-		{
-			g_fLengthPlayer += 10.0f;
-		}
-	}
-	else if (KeyboardRepeat(DIK_DOWN) == true|| JoypadRepeat(JOYKEY_R3))
-	{//DOWNキーが押された(縮小)
-		if (g_fLengthPlayer > 40)
-		{
-			g_fLengthPlayer -= 10.0f;
-		}
-	}
-	else if (KeyboardRepeat(DIK_LEFT) == true|| JoypadRepeat(JOYKEY_L1) == true)
+	//if (KeyboardRepeat(DIK_UP) == true|| JoypadRepeat(JOYKEY_L3))
+	//{//UPキーが押された(拡大)
+	//	if (g_fLengthPlayer < 400)
+	//	{
+	//		g_fLengthPlayer += 10.0f;
+	//	}
+	//}
+	//else if (KeyboardRepeat(DIK_DOWN) == true|| JoypadRepeat(JOYKEY_R3))
+	//{//DOWNキーが押された(縮小)
+	//	if (g_fLengthPlayer > 40)
+	//	{
+	//		g_fLengthPlayer -= 10.0f;
+	//	}
+	//}
+
+	if (KeyboardRepeat(DIK_LEFT) == true|| JoypadRepeat(JOYKEY_L1) == true)
 	{//LEFTキーが押された(反時計回り)
 		g_player.rot.z += 0.1f;
 	}
 	else if (KeyboardRepeat(DIK_RIGHT) == true|| JoypadRepeat(JOYKEY_R1) == true)
 	{//RIGHTキーが押された(時計回り)
 		g_player.rot.z -= 0.1f;
-	}
-	else if(KeyboardTrigger(DIK_R) == true)
-	{
-		int nID = MessageBox(NULL,"リセットしますか?", "リセッシュ", MB_YESNO | MB_ICONQUESTION);
-		if (nID == IDYES)
-		{
-			g_CounterAnimPlayer = 0;												//アニメーションカウンターを初期化
-			g_nPatternAnimPlayer = 0;												//アニメーションパターンNo.を初期化
-			g_player.pos = D3DXVECTOR3(300.0f, 300.0f, 0.0f);						//位置を初期化
-			g_player.move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);							//移動量を初期化
-			g_Direction = 0.2;														//方向を初期化
-			g_player.rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);							//向きを初期化する
-			g_fLengthPlayer = sqrtf(WIDTH * WIDTH + HEIGHT * HEIGHT) / 2.0f;		//対角線の長さを再び算出する
-		}
 	}
 
 	if (g_player.bUse == true)
@@ -280,12 +268,8 @@ void UpdatePlayer(void)
 
 			SetBullet(g_player.pos, D3DXVECTOR3(sinf(g_player.rot.z + D3DX_PI) * 20.0f, cosf(g_player.rot.z + D3DX_PI) * 20.0f, 0.0f), 100, BULLETTYPE_PLAYER);
 			PlaySound(SOUND_LABEL_SE01);
-			//SetBullet(g_player.pos, D3DXVECTOR3(sinf(g_player.rot.z + D3DX_PI*0.75) * 5.0f, cosf(g_player.rot.z + D3DX_PI * 0.75) * 5.0f, 0.0f));
-			//SetBullet(g_player.pos, D3DXVECTOR3(sinf(g_player.rot.z + D3DX_PI*-0.75) * 5.0f, cosf(g_player.rot.z + D3DX_PI * -0.75) * 5.0f, 0.0f));
 		}
 	}
-
-
 
 	//位置を更新
 	g_player.pos.x += g_player.move.x;
@@ -314,7 +298,6 @@ void UpdatePlayer(void)
 		g_player.pos.y = 75;
 		g_player.move.y = 0.0f;
 	}
-
 
 	//移動量を更新(減衰させる)
 	g_player.move.x += (0.0f - g_player.move.x) * 0.05f;
@@ -411,10 +394,9 @@ void HitPlayer(int nDamage)
 {
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
-	g_player.nLife -= nDamage;
 	if (g_player.nLife <= 0)
 	{
-		SetParticle(g_player.pos, 20);
+		SetParticle(g_player.pos, 20,10);
 		g_player.bDisp = false;
 		g_player.bUse = false;
 		g_player.state = PLAYERSTATE_DEATH;
@@ -435,4 +417,5 @@ void HitPlayer(int nDamage)
 
 		g_pVtxBuffPlayer->Unlock();
 	}
+	HitWave(3);
 }

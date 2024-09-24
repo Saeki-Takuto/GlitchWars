@@ -1,6 +1,6 @@
 //==================================================================
 //
-//キャラクターをキー入力で操作できるようにしよう
+//GlitchWars
 //Author:Saeki Takuto
 //
 //==================================================================
@@ -21,12 +21,12 @@
 typedef struct
 {
 	D3DXVECTOR3 pos;	//位置
-	D3DXCOLOR col;	//色
-	D3DXVECTOR3 move;//移動量
-	D3DXVECTOR3 rot;//向き
-	float fRadius;	//エフェクトを出してる物のタイプ
-	float fLength;//対角線の長さ
-	float fAngle;
+	D3DXCOLOR col;		//色
+	D3DXVECTOR3 move;	//移動量
+	D3DXVECTOR3 rot;	//向き
+	float fRadius;		//エフェクトを出してる物のタイプ
+	float fLength;		//対角線の長さ
+	float fAngle;		//方向
 	int nLife;			//寿命
 	bool bUse;			//使用しているかどうか
 }Effect;
@@ -62,9 +62,7 @@ void InitEffect(void)
 		g_aEffect[nCntEffect].fAngle = 0.0f;
 		g_aEffect[nCntEffect].fRadius = 0.0f;
 		g_aEffect[nCntEffect].bUse = false;//使用していない状態にする
-		
 	}
-
 
 	//頂点バッファの生成
 	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4 * MAX_EFFECT,
@@ -86,14 +84,11 @@ void InitEffect(void)
 		pVtx[2].pos = D3DXVECTOR3(0.0f,0.0f,0.0f);
 		pVtx[3].pos = D3DXVECTOR3(0.0f,0.0f,0.0f);
 
-
-
 		//rhwの設定
 		pVtx[0].rhw = 1.0f;
 		pVtx[1].rhw = 1.0f;
 		pVtx[2].rhw = 1.0f;
 		pVtx[3].rhw = 1.0f;
-
 
 		//頂点カラーの設定
 		pVtx[0].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
@@ -140,7 +135,6 @@ void UpdateEffect(void)
 	int nCntEffect;
 
 	int nDeb = 1;
-
 
 	for (nCntEffect = 0; nCntEffect < MAX_EFFECT; nCntEffect++)
 	{
@@ -285,10 +279,8 @@ void SetEffect(D3DXVECTOR3 pos, D3DXCOLOR col, float fRadius, int nLife,D3DXVECT
 			pVtx[2].col = g_aEffect[nCntEffect].col;
 			pVtx[3].col = g_aEffect[nCntEffect].col;
 
-
 			break;
 		}
-
 		pVtx += 4;
 	}
 	g_pVtxBuffEffect->Unlock();

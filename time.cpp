@@ -1,7 +1,15 @@
+//==================================================================
+//
+//GlitchWars
+//Author:Saeki Takuto
+//
+//==================================================================
+
 #include "time.h"
 #include "main.h"
+#include "wave.h"
 //マクロ定義
-#define MAX_KETA (3)//最大桁
+#define MAX_DIGIT (3)//最大桁
 
 //グローバル変数
 LPDIRECT3DTEXTURE9 g_pTextureTime = NULL;//テクスチャへのポインタ
@@ -21,11 +29,11 @@ void InitTime(void)
 
 	//テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
-		"data/TEXTURE/number000.png",
+		"data/TEXTURE/number001.png",
 		&g_pTextureTime);
 
 	//頂点バッファの生成
-	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4 * MAX_KETA,
+	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4 * MAX_DIGIT,
 		D3DUSAGE_WRITEONLY,
 		FVF_VERTEX_2D,
 		D3DPOOL_MANAGED,
@@ -34,7 +42,7 @@ void InitTime(void)
 
 
 	g_posTime = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//位置を初期化する
-	g_nTime = 30;//値を初期化する
+	g_nTime = 120;//値を初期化する
 	nCntTime=0;
 
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
@@ -42,13 +50,13 @@ void InitTime(void)
 	//頂点バッファをロックし、頂点情報へのポインタを取得
 	g_pVtxBuffTime->Lock(0, 0, (void**)&pVtx, 0);
 
-	for (nCntTime = 0; nCntTime < MAX_KETA; nCntTime++)
+	for (nCntTime = 0; nCntTime < MAX_DIGIT; nCntTime++)
 	{
 		//頂点座標の設定
-		pVtx[0].pos = D3DXVECTOR3(SCREEN_WIDTH - 500 + nCntTime * 30.0f, 0.0f, 0.0f);
-		pVtx[1].pos = D3DXVECTOR3(SCREEN_WIDTH - 500 + nCntTime * 30.0f + 30.0f, 0.0f, 0.0f);
-		pVtx[2].pos = D3DXVECTOR3(SCREEN_WIDTH - 500 + nCntTime * 30.0f, 50.0f, 0.0f);
-		pVtx[3].pos = D3DXVECTOR3(SCREEN_WIDTH - 500 + nCntTime * 30.0f + 30.0f, 50.0f, 0.0f);
+		pVtx[0].pos = D3DXVECTOR3(SCREEN_WIDTH - 900 + nCntTime * 30.0f, 10.0f, 0.0f);
+		pVtx[1].pos = D3DXVECTOR3(SCREEN_WIDTH - 900 + nCntTime * 30.0f + 30.0f, 10.0f, 0.0f);
+		pVtx[2].pos = D3DXVECTOR3(SCREEN_WIDTH - 900 + nCntTime * 30.0f, 60.0f, 0.0f);
+		pVtx[3].pos = D3DXVECTOR3(SCREEN_WIDTH - 900 + nCntTime * 30.0f + 30.0f, 60.0f, 0.0f);
 
 		//rhwの設定
 		pVtx[0].rhw = 1.0f;
@@ -96,7 +104,7 @@ void UninitTime(void)
 //スコアの更新処理
 void UpdateTime(void)
 {
-	int aPosTexU[MAX_KETA];//各桁の数字を格納
+	int aPosTexU[MAX_DIGIT];//各桁の数字を格納
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
 	int nCntTime;
@@ -110,13 +118,14 @@ void UpdateTime(void)
 		if (g_nTime != 0)
 		{
 			g_nTime--;
+			HitWave(1);
 		}
 	}
 
 	g_pVtxBuffTime->Lock(0, 0, (void**)&pVtx, 0);
 
 	//桁ごとに分割する
-	for (nCntTime = 0; nCntTime < MAX_KETA; nCntTime++)
+	for (nCntTime = 0; nCntTime < MAX_DIGIT; nCntTime++)
 	{
 		if (nCntTime == 0)
 		{
@@ -134,9 +143,6 @@ void UpdateTime(void)
 		pVtx[1].tex = D3DXVECTOR2(0.1 + (0.1 * aPosTexU[nCntTime]), 0.0f);
 		pVtx[2].tex = D3DXVECTOR2(0.0 + (0.1 * aPosTexU[nCntTime]), 1.0f);
 		pVtx[3].tex = D3DXVECTOR2(0.1 + (0.1 * aPosTexU[nCntTime]), 1.0f);
-
-
-
 
 		pVtx += 4;
 	}
@@ -159,14 +165,13 @@ void DrawTime(void)
 	//頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_2D);
 
-	for (nCntTime = 0; nCntTime < MAX_KETA; nCntTime++)
+	for (nCntTime = 0; nCntTime < MAX_DIGIT; nCntTime++)
 	{
 		//テクスチャの設定
 		pDevice->SetTexture(0, g_pTextureTime);
 
 		////テクスチャの設定
 		////pDevice->SetTexture(0, NULL);
-
 
 		//プレイヤーの描画
 		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 4 * nCntTime, 2);
@@ -176,7 +181,7 @@ void DrawTime(void)
 //スコアの設定処理
 void SetTime(int nTime)
 {
-	int aPosTexU[MAX_KETA];//各桁の数字を格納
+	int aPosTexU[MAX_DIGIT];//各桁の数字を格納
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
 	g_nTime = nTime;
@@ -187,7 +192,7 @@ void SetTime(int nTime)
 	g_pVtxBuffTime->Lock(0, 0, (void**)&pVtx, 0);
 
 	//桁ごとに分割する
-	for (nCntTime = 0; nCntTime < MAX_KETA; nCntTime++)
+	for (nCntTime = 0; nCntTime < MAX_DIGIT; nCntTime++)
 	{
 		if (nCntTime == 0)
 		{
@@ -206,9 +211,6 @@ void SetTime(int nTime)
 		pVtx[2].tex = D3DXVECTOR2(0.0 + (0.1 * aPosTexU[nCntTime]), 1.0f);
 		pVtx[3].tex = D3DXVECTOR2(0.1 + (0.1 * aPosTexU[nCntTime]), 1.0f);
 
-
-
-
 		pVtx += 4;
 	}
 	g_pVtxBuffTime->Unlock();
@@ -218,7 +220,7 @@ void SetTime(int nTime)
 //スコアの加算処理
 void AddTime(int nValue)
 {
-	int aPosTexU[MAX_KETA];//各桁の数値を格納
+	int aPosTexU[MAX_DIGIT];//各桁の数値を格納
 
 	g_nTime += nValue;
 	int nCntTime;
@@ -229,7 +231,7 @@ void AddTime(int nValue)
 	g_pVtxBuffTime->Lock(0, 0, (void**)&pVtx, 0);
 
 	//桁ごとに分割する
-	for (nCntTime = 0; nCntTime < MAX_KETA; nCntTime++)
+	for (nCntTime = 0; nCntTime < MAX_DIGIT; nCntTime++)
 	{
 		if (nCntTime == 0)
 		{
@@ -251,8 +253,6 @@ void AddTime(int nValue)
 		pVtx += 4;
 	}
 	g_pVtxBuffTime->Unlock();
-
-
 }
 
 //スコア取得

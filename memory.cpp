@@ -1,8 +1,15 @@
+//==================================================================
+//
+//GlitchWars
+//Author:Saeki Takuto
+//
+//==================================================================
+
 #include "memory.h"
 #include "main.h"
 #include "enemy.h"
 //マクロ定義
-#define MAX_KETA (3)//最大桁
+#define MAX_DIGIT (3)//最大桁
 
 //グローバル変数
 LPDIRECT3DTEXTURE9 g_pTextureMemory = NULL;//テクスチャへのポインタ
@@ -10,6 +17,7 @@ LPDIRECT3DVERTEXBUFFER9 g_pVtxBuffMemory = NULL;//頂点バッファへのポインタ
 D3DXVECTOR3 g_posMemory;//スコアの位置
 int g_nMemory;//スコアの値
 int nCntMemorySecond;
+static int nState;
 
 //スコアの初期化処理
 void InitMemory(void)
@@ -22,11 +30,11 @@ void InitMemory(void)
 
 	//テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
-		"data/TEXTURE/number000.png",
+		"data/TEXTURE/number001.png",
 		&g_pTextureMemory);
 
 	//頂点バッファの生成
-	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4 * MAX_KETA,
+	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4 * MAX_DIGIT,
 		D3DUSAGE_WRITEONLY,
 		FVF_VERTEX_2D,
 		D3DPOOL_MANAGED,
@@ -37,19 +45,20 @@ void InitMemory(void)
 	g_posMemory = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//位置を初期化する
 	g_nMemory = 0;//値を初期化する
 	nCntMemory = 0;
+	nState = 0;
 
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
 	//頂点バッファをロックし、頂点情報へのポインタを取得
 	g_pVtxBuffMemory->Lock(0, 0, (void**)&pVtx, 0);
 
-	for (nCntMemory = 0; nCntMemory < MAX_KETA; nCntMemory++)
+	for (nCntMemory = 0; nCntMemory < MAX_DIGIT; nCntMemory++)
 	{
 		//頂点座標の設定
-		pVtx[0].pos = D3DXVECTOR3(SCREEN_WIDTH - 800 + nCntMemory * 30.0f, 0.0f, 0.0f);
-		pVtx[1].pos = D3DXVECTOR3(SCREEN_WIDTH - 800 + nCntMemory * 30.0f + 30.0f, 0.0f, 0.0f);
-		pVtx[2].pos = D3DXVECTOR3(SCREEN_WIDTH - 800 + nCntMemory * 30.0f, 50.0f, 0.0f);
-		pVtx[3].pos = D3DXVECTOR3(SCREEN_WIDTH - 800 + nCntMemory * 30.0f + 30.0f, 50.0f, 0.0f);
+		pVtx[0].pos = D3DXVECTOR3(SCREEN_WIDTH - 1420 + nCntMemory * 30.0f, 60.0f, 0.0f);
+		pVtx[1].pos = D3DXVECTOR3(SCREEN_WIDTH - 1420 + nCntMemory * 30.0f + 30.0f, 60.0f, 0.0f);
+		pVtx[2].pos = D3DXVECTOR3(SCREEN_WIDTH - 1420 + nCntMemory * 30.0f, 100.0f, 0.0f);
+		pVtx[3].pos = D3DXVECTOR3(SCREEN_WIDTH - 1420 + nCntMemory * 30.0f + 30.0f, 100.0f, 0.0f);
 
 		//rhwの設定
 		pVtx[0].rhw = 1.0f;
@@ -97,34 +106,24 @@ void UninitMemory(void)
 //スコアの更新処理
 void UpdateMemory(void)
 {
-	int aPosTexU[MAX_KETA];//各桁の数字を格納
+	int aPosTexU[MAX_DIGIT];//各桁の数字を格納
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
 	int nCntMemory;
 	int nData1 = 100, nData2 = 10;
 
-	//nCntMemorySecond++;
+	g_nMemory=GetNumEnemy()*10;
 
-	//if (nCntMemorySecond >= 60)
-	//{
-	//	nCntMemorySecond = 0;
-	//	if (g_nMemory != 0)
-	//	{
-	//		g_nMemory--;
-	//	}
-	//}
-
-	g_nMemory=GetNumEnemy()*5;
-
-	if (g_nMemory >= 100)
+	if (g_nMemory >= 100||nState==1)
 	{
 		g_nMemory = 100;
+		nState = 1;
 	}
 
 	g_pVtxBuffMemory->Lock(0, 0, (void**)&pVtx, 0);
 
 	//桁ごとに分割する
-	for (nCntMemory = 0; nCntMemory < MAX_KETA; nCntMemory++)
+	for (nCntMemory = 0; nCntMemory < MAX_DIGIT; nCntMemory++)
 	{
 		if (nCntMemory == 0)
 		{
@@ -142,9 +141,6 @@ void UpdateMemory(void)
 		pVtx[1].tex = D3DXVECTOR2(0.1 + (0.1 * aPosTexU[nCntMemory]), 0.0f);
 		pVtx[2].tex = D3DXVECTOR2(0.0 + (0.1 * aPosTexU[nCntMemory]), 1.0f);
 		pVtx[3].tex = D3DXVECTOR2(0.1 + (0.1 * aPosTexU[nCntMemory]), 1.0f);
-
-
-
 
 		pVtx += 4;
 	}
@@ -167,14 +163,10 @@ void DrawMemory(void)
 	//頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_2D);
 
-	for (nCntMemory = 0; nCntMemory < MAX_KETA; nCntMemory++)
+	for (nCntMemory = 0; nCntMemory < MAX_DIGIT; nCntMemory++)
 	{
 		//テクスチャの設定
 		pDevice->SetTexture(0, g_pTextureMemory);
-
-		////テクスチャの設定
-		////pDevice->SetTexture(0, NULL);
-
 
 		//プレイヤーの描画
 		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 4 * nCntMemory, 2);
@@ -184,7 +176,7 @@ void DrawMemory(void)
 //スコアの設定処理
 void SetMemory(int nMemory)
 {
-	int aPosTexU[MAX_KETA];//各桁の数字を格納
+	int aPosTexU[MAX_DIGIT];//各桁の数字を格納
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
 	g_nMemory = nMemory;
@@ -195,7 +187,7 @@ void SetMemory(int nMemory)
 	g_pVtxBuffMemory->Lock(0, 0, (void**)&pVtx, 0);
 
 	//桁ごとに分割する
-	for (nCntMemory = 0; nCntMemory < MAX_KETA; nCntMemory++)
+	for (nCntMemory = 0; nCntMemory < MAX_DIGIT; nCntMemory++)
 	{
 		if (nCntMemory == 0)
 		{
@@ -214,9 +206,6 @@ void SetMemory(int nMemory)
 		pVtx[2].tex = D3DXVECTOR2(0.0 + (0.1 * aPosTexU[nCntMemory]), 1.0f);
 		pVtx[3].tex = D3DXVECTOR2(0.1 + (0.1 * aPosTexU[nCntMemory]), 1.0f);
 
-
-
-
 		pVtx += 4;
 	}
 	g_pVtxBuffMemory->Unlock();
@@ -226,7 +215,7 @@ void SetMemory(int nMemory)
 //スコアの加算処理
 void AddMemory(int nValue)
 {
-	int aPosTexU[MAX_KETA];//各桁の数値を格納
+	int aPosTexU[MAX_DIGIT];//各桁の数値を格納
 
 	g_nMemory += nValue;
 	int nCntMemory;
@@ -237,7 +226,7 @@ void AddMemory(int nValue)
 	g_pVtxBuffMemory->Lock(0, 0, (void**)&pVtx, 0);
 
 	//桁ごとに分割する
-	for (nCntMemory = 0; nCntMemory < MAX_KETA; nCntMemory++)
+	for (nCntMemory = 0; nCntMemory < MAX_DIGIT; nCntMemory++)
 	{
 		if (nCntMemory == 0)
 		{
@@ -259,8 +248,6 @@ void AddMemory(int nValue)
 		pVtx += 4;
 	}
 	g_pVtxBuffMemory->Unlock();
-
-
 }
 
 //スコア取得

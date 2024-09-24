@@ -1,6 +1,6 @@
 //==================================================================
 //
-//キャラクターをキー入力で操作できるようにしよう
+//GlitchWars
 //Author:Saeki Takuto
 //
 //==================================================================
@@ -31,7 +31,7 @@ typedef struct
 }Bullet;
 
 //グローバル変数
-LPDIRECT3DTEXTURE9 g_pTextureBullet = NULL;		//テクスチャへのポインタ
+LPDIRECT3DTEXTURE9 g_pTextureBullet[2] = {};		//テクスチャへのポインタ
 LPDIRECT3DVERTEXBUFFER9 g_pVtxBuffBullet = NULL;//頂点バッファへのポインタ
 Bullet g_aBullet[MAX_BULLET];					//弾の情報
 
@@ -47,7 +47,13 @@ void InitBullet(void)
 	//テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
 							  "data/TEXTURE/bullet001.png",
-							  &g_pTextureBullet);
+							  &g_pTextureBullet[0]);
+
+	//テクスチャの読み込み
+	D3DXCreateTextureFromFile(pDevice,
+		"data/TEXTURE/virus.png",
+		&g_pTextureBullet[1]);
+
 
 	//弾の情報の初期化
 	for (nCntBullet = 0; nCntBullet < MAX_BULLET; nCntBullet++)
@@ -109,11 +115,14 @@ void InitBullet(void)
 //弾の終了処理
 void UninitBullet(void)
 {
-	//テクスチャの破棄
-	if (g_pTextureBullet != NULL)
+	for (int nCnt = 0; nCnt > 2; nCnt++)
 	{
-		g_pTextureBullet->Release();
-		g_pTextureBullet = NULL;
+		//テクスチャの破棄
+		if (g_pTextureBullet[nCnt] != NULL)
+		{
+			g_pTextureBullet[nCnt]->Release();
+			g_pTextureBullet[nCnt] = NULL;
+		}
 	}
 
 	//頂点バッファの破棄
@@ -139,11 +148,9 @@ void UpdateBullet(void)
 		if (g_aBullet[nCntBullet].bUse == true)
 		{//弾が使用されている
 
-				//SetEffect(g_aBullet[nCntBullet].pos, D3DXCOLOR(1.0f, 1.0f, 1.0f,1.0f), 30.0f, 10, D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 				Enemy* pEnemy;//敵の情報へのポインタ
 				Player* pPlayer;
 				int nCntEnemy;
-				int nCntPlayer;
 
 				//敵の取得
 				pEnemy = GetEnemy();
@@ -161,35 +168,6 @@ void UpdateBullet(void)
 
 				if (g_aBullet[nCntBullet].type == BULLETTYPE_HOMING)
 				{
-					float fRotMove, fRotDest, fRotDiff;
-
-					fRotMove = atan2f(g_aBullet[nCntBullet].pos.x, g_aBullet[nCntBullet].pos.y);//現在の移動方向(角度)
-					fRotDest = atan2f(pPlayer->pos.x- g_aBullet[nCntBullet].pos.x,pPlayer->pos.y- g_aBullet[nCntBullet].pos.y);//目標の移動方向(角度)
-					fRotDiff = fRotDest - fRotMove;//目標の移動方向までの差分
-
-					if ((fRotMove - fRotDest) <= -3.14)
-					{
-						fRotDiff += 6.28f;
-					}
-					else if ((fRotDest-fRotMove) >= 3.14)
-					{
-						fRotDiff -= 6.28f;
-					}
-
-
-					fRotMove += fRotDiff * 0.5f;//移動方向(角度)の補正
-
-					if ((fRotMove - fRotDest) <= -3.14)
-					{
-						fRotDiff += 6.28f;
-					}
-					else if ((fRotDest - fRotMove) >= 3.14)
-					{
-						fRotDiff -= 6.28f;
-					}
-
-					g_aBullet[nCntBullet].move.x = sinf(fRotMove) * 5.0f;
-					g_aBullet[nCntBullet].move.y = cosf(fRotMove) * 5.0f;
 
 				}
 
@@ -228,26 +206,16 @@ void UpdateBullet(void)
 							if (g_aBullet[nCntBullet].pos.x >= pPlayer->pos.x - WIDTH / 2 && g_aBullet[nCntBullet].pos.x <= pPlayer->pos.x + WIDTH / 2 && g_aBullet[nCntBullet].pos.y >= pPlayer->pos.y - HEIGHT / 2 && g_aBullet[nCntBullet].pos.y <= pPlayer->pos.y + HEIGHT / 2)
 							{
 								HitPlayer(50);
-								AddScore(1);
 								g_aBullet[nCntBullet].bUse = false;//弾を使用してない状態にする
 							}
 						}
 				}
 
-				if (0 >= g_aBullet[nCntBullet].pos.x >= SCREEN_WIDTH || 0 >= g_aBullet[nCntBullet].pos.y >= SCREEN_HEIGHT)
+				if (g_aBullet[nCntBullet].pos.x <= 0.0f || g_aBullet[nCntBullet].pos.x >= SCREEN_WIDTH|| g_aBullet[nCntBullet].pos.y <= 0.0f || g_aBullet[nCntBullet].pos.y >= SCREEN_HEIGHT)//弾が画面外にでた
 				{
 					g_aBullet[nCntBullet].bUse = false;//使用していない状態にする
-					SetExplosion(g_aBullet[nCntBullet].pos, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 				}
-				else if (g_aBullet[nCntBullet].nLife <= 0)
-				{
-					g_aBullet[nCntBullet].bUse = false;//使用していない状態にする
-					SetExplosion(g_aBullet[nCntBullet].pos, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-				}
-
-
 				g_pVtxBuffBullet->Unlock();
-
 		}
 	}
 }
@@ -273,8 +241,17 @@ void DrawBullet(void)
 		if (g_aBullet[nCntBullet].bUse == true)
 		{//弾が使用されている
 
-			//テクスチャの設定
-			pDevice->SetTexture(0, g_pTextureBullet);
+			if (g_aBullet[nCntBullet].type == BULLETTYPE_PLAYER)
+			{
+				//テクスチャの設定
+				pDevice->SetTexture(0, g_pTextureBullet[0]);
+			}
+			else if (g_aBullet[nCntBullet].type == BULLETTYPE_ENEMY)
+			{
+				//テクスチャの設定
+				pDevice->SetTexture(0, g_pTextureBullet[1]);
+
+			}
 
 			//ポリゴンの描画
 			pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP,

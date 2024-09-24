@@ -1,3 +1,10 @@
+//==================================================================
+//
+//GlitchWars
+//Author:Saeki Takuto
+//
+//==================================================================
+
 #include "bsod.h"
 #include "input.h"
 #include "fade.h"
@@ -63,6 +70,7 @@ void InitBsod(void)
 	//頂点バッファをアンロックする
 	g_pVtxBuffBsod->Unlock();
 	nCntTimeBsod = 0;
+
 	//サウンドの設定
 	PlaySound(SOUND_LABEL_SE03);
 }
@@ -70,12 +78,12 @@ void InitBsod(void)
 //タイトル画面の終了処理
 void UninitBsod(void)
 {
-		//テクスチャの破棄
-		if (g_pTextureBsod != NULL)
-		{
-			g_pTextureBsod->Release();
-			g_pTextureBsod = NULL;
-		}
+	//テクスチャの破棄
+	if (g_pTextureBsod != NULL)
+	{
+		g_pTextureBsod->Release();
+		g_pTextureBsod = NULL;
+	}
 
 	//頂点バッファの破棄
 	if (g_pVtxBuffBsod != NULL)
@@ -83,9 +91,6 @@ void UninitBsod(void)
 		g_pVtxBuffBsod->Release();
 		g_pVtxBuffBsod = NULL;
 	}
-
-	StopSound();
-
 }
 
 //タイトル画面の更新処理
@@ -99,8 +104,8 @@ void UpdateBsod(void)
 		SetFade(MODE_RESULT);
 	}
 
-	if (KeyboardTrigger(DIK_RETURN) == true || GetJoypadPress(JOYKEY_A))
-	{//決定キー(ENTERキー)が押された
+	if (KeyboardTrigger(DIK_RETURN) == true || GetJoypadPress(JOYKEY_START))
+	{//決定キー(ENTERキー、STARTボタン)が押された
 		//モード設定(タイトル画面に移行)
 		SetFade(MODE_RESULT);
 	}
@@ -120,10 +125,9 @@ void DrawBsod(void)
 	//頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_2D);
 
-		//テクスチャの設定
-		pDevice->SetTexture(0, g_pTextureBsod);
+	//テクスチャの設定
+	pDevice->SetTexture(0, g_pTextureBsod);
 
 	//プレイヤーの描画
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
-
 }

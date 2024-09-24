@@ -1,3 +1,10 @@
+//==================================================================
+//
+//GlitchWars
+//Author:Saeki Takuto
+//
+//==================================================================
+
 #include "rankset.h"
 #include <stdio.h>
 #include "score.h"
@@ -24,8 +31,6 @@ void InitRankSet(void)
 	D3DXCreateTextureFromFile(pDevice,
 		"data/TEXTURE/RankNumber.png",
 		&g_pTextureRankSet[1]);
-
-
 
 	//頂点バッファの作成
 	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4*2,
@@ -115,7 +120,6 @@ void UninitRankSet(void)
 		g_pVtxBuffRankSet->Release();
 		g_pVtxBuffRankSet = NULL;
 	}
-
 }
 
 //順位の更新処理

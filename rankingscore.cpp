@@ -1,3 +1,10 @@
+//==================================================================
+//
+//GlitchWars
+//Author:Saeki Takuto
+//
+//==================================================================
+
 #include "input.h"
 #include "fade.h"
 #include "game.h"
@@ -178,7 +185,7 @@ void UpdateRankingScore(void)
 		}
 
 	}
-	if (KeyboardTrigger(DIK_RETURN) == true)
+	if (KeyboardTrigger(DIK_RETURN) == true|| JoypadTrigger(JOYKEY_A))
 	{
 		//ƒ^ƒCƒgƒ‹
 		SetFade(MODE_TITLE);

@@ -1,7 +1,14 @@
+//==================================================================
+//
+//GlitchWars
+//Author:Saeki Takuto
+//
+//==================================================================
+
 #include "score.h"
 #include "main.h"
 //マクロ定義
-#define MAX_KETA (8)//最大桁
+#define MAX_DIGIT (8)//最大桁
 
 //グローバル変数
 LPDIRECT3DTEXTURE9 g_pTextureScore = NULL;//テクスチャへのポインタ
@@ -20,11 +27,11 @@ void InitScore(void)
 
 	//テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
-		"data/TEXTURE/number000.png",
+		"data/TEXTURE/number001.png",
 		&g_pTextureScore);
 
 	//頂点バッファの生成
-	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4 * MAX_KETA,
+	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4 * MAX_DIGIT,
 		D3DUSAGE_WRITEONLY,
 		FVF_VERTEX_2D,
 		D3DPOOL_MANAGED,
@@ -40,13 +47,13 @@ void InitScore(void)
 	//頂点バッファをロックし、頂点情報へのポインタを取得
 	g_pVtxBuffScore->Lock(0, 0, (void**)&pVtx, 0);
 
-	for (nCntScore = 0; nCntScore < MAX_KETA; nCntScore++)
+	for (nCntScore = 0; nCntScore < MAX_DIGIT; nCntScore++)
 	{
 		//頂点座標の設定
-		pVtx[0].pos = D3DXVECTOR3(SCREEN_WIDTH-250+nCntScore*30.0f, 0.0f, 0.0f);
-		pVtx[1].pos = D3DXVECTOR3(SCREEN_WIDTH - 250 +nCntScore*30.0f+30.0f, 0.0f, 0.0f);
-		pVtx[2].pos = D3DXVECTOR3(SCREEN_WIDTH - 250 +nCntScore*30.0f, 50.0f, 0.0f);
-		pVtx[3].pos = D3DXVECTOR3(SCREEN_WIDTH - 250 +nCntScore*30.0f+30.0f, 50.0f, 0.0f);
+		pVtx[0].pos = D3DXVECTOR3(SCREEN_WIDTH-250+nCntScore*30.0f, 10.0f, 0.0f);
+		pVtx[1].pos = D3DXVECTOR3(SCREEN_WIDTH - 250 +nCntScore*30.0f+30.0f, 10.0f, 0.0f);
+		pVtx[2].pos = D3DXVECTOR3(SCREEN_WIDTH - 250 +nCntScore*30.0f, 60.0f, 0.0f);
+		pVtx[3].pos = D3DXVECTOR3(SCREEN_WIDTH - 250 +nCntScore*30.0f+30.0f, 60.0f, 0.0f);
 
 		//rhwの設定
 		pVtx[0].rhw = 1.0f;
@@ -94,7 +101,6 @@ void UninitScore(void)
 //スコアの更新処理
 void UpdateScore(void)
 {
-
 }
 
 //スコアの描画処理
@@ -112,7 +118,7 @@ void DrawScore(void)
 	//頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_2D);
 
-	for (nCntScore = 0; nCntScore < MAX_KETA; nCntScore++)
+	for (nCntScore = 0; nCntScore < MAX_DIGIT; nCntScore++)
 	{
 		//テクスチャの設定
 		pDevice->SetTexture(0, g_pTextureScore);
@@ -129,7 +135,7 @@ void DrawScore(void)
 //スコアの設定処理
 void SetScore(int nScore)
 {
-	int aPosTexU[MAX_KETA];//各桁の数字を格納
+	int aPosTexU[MAX_DIGIT];//各桁の数字を格納
 	VERTEX_2D* pVtx;							//頂点情報へのポインタ
 
 	g_nScore = nScore;
@@ -140,7 +146,7 @@ void SetScore(int nScore)
 	g_pVtxBuffScore->Lock(0, 0, (void**)&pVtx, 0);
 
 	//桁ごとに分割する
-	for (nCntScore = 0; nCntScore < MAX_KETA; nCntScore++)
+	for (nCntScore = 0; nCntScore < MAX_DIGIT; nCntScore++)
 	{
 		if (nCntScore==0)
 		{
@@ -159,9 +165,6 @@ void SetScore(int nScore)
 		pVtx[2].tex = D3DXVECTOR2(0.0 + (0.1 * aPosTexU[nCntScore]), 1.0f);
 		pVtx[3].tex = D3DXVECTOR2(0.1 + (0.1 * aPosTexU[nCntScore]), 1.0f);
 
-
-
-
 		pVtx += 4;
 	}
 	g_pVtxBuffScore->Unlock();
@@ -171,7 +174,7 @@ void SetScore(int nScore)
 //スコアの加算処理
 void AddScore(int nValue)
 {
-	int aPosTexU[MAX_KETA];//各桁の数値を格納
+	int aPosTexU[MAX_DIGIT];//各桁の数値を格納
 
 	g_nScore += nValue;
 	int nCntScore;
@@ -182,7 +185,7 @@ void AddScore(int nValue)
 	g_pVtxBuffScore->Lock(0, 0, (void**)&pVtx, 0);
 
 	//桁ごとに分割する
-	for (nCntScore = 0; nCntScore < MAX_KETA; nCntScore++)
+	for (nCntScore = 0; nCntScore < MAX_DIGIT; nCntScore++)
 	{
 		if (nCntScore == 0)
 		{
@@ -190,7 +193,7 @@ void AddScore(int nValue)
 		}
 		else
 		{
- 			aPosTexU[nCntScore] = (g_nScore % nData1 / nData2);
+			aPosTexU[nCntScore] = (g_nScore % nData1 / nData2);
 			nData1 /= 10;
 			nData2 /= 10;
 		}
@@ -204,8 +207,6 @@ void AddScore(int nValue)
 		pVtx += 4;
 	}
 	g_pVtxBuffScore->Unlock();
-
-
 }
 
 //スコア取得
